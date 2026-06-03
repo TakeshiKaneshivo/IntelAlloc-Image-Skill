@@ -1,0 +1,4 @@
+interface:
+  display_name: "IntelAlloc Image"
+  short_description: "Generate, edit, and batch-process images through the IntelAlloc API from Codex."
+  default_prompt: "Use IntelAlloc to generate an image, edit a local image, or batch-edit images from a folder."

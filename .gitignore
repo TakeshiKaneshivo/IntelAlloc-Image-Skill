@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+
+config.json
+history.json
+*.tmp
+
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
