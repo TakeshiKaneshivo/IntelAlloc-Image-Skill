@@ -12,3 +12,7 @@ history.json
 *.jpeg
 *.webp
 *.gif
+
+!docs/
+!docs/images/
+!docs/images/*.png
