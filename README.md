@@ -8,13 +8,9 @@ This repository supports English and Chinese users. Install the skill, initializ
 
 `intelalloc-image` is built specifically for the IntelAlloc platform. It is designed for Codex workflows, enabling GPT to call IntelAlloc's image-2 model reliably for image generation, image editing, reference-image workflows, and iterative follow-up edits.
 
-本 skill 是 IntelAlloc 平台专用的 Codex 生图/改图工具，用于让 GPT 在 Codex 会话中稳定调用 IntelAlloc 的 image-2 模型，完成文本生图、图片编辑、参考图编辑和连续追改等工作流。
-
 IntelAlloc registration: https://backend.intelalloc.com/register?promo=JINGGE
 
 Need an invitation code? Contact takeshikaneshivo@gmail.com.
-
-需要注册邀请码可以联系：takeshikaneshivo@gmail.com
 
 ![IntelAlloc Codex image workflow demo 1](docs/images/intelalloc-demo-1.png)
 
@@ -191,6 +187,12 @@ temporary files
 ```
 
 ## 中文使用说明
+
+本 skill 是 IntelAlloc 平台专用的 Codex 生图/改图工具，用于让 GPT 在 Codex 会话中稳定调用 IntelAlloc 的 image-2 模型，完成文本生图、图片编辑、参考图编辑和连续追改等工作流。
+
+IntelAlloc 平台注册链接：https://backend.intelalloc.com/register?promo=JINGGE
+
+需要注册邀请码可以联系：takeshikaneshivo@gmail.com
 
 这个 skill 给 Codex 用户使用。安装后，你不需要记 CLI 命令，直接用自然语言告诉 Codex 生成什么图、改哪张图、输出到哪里即可。
 
