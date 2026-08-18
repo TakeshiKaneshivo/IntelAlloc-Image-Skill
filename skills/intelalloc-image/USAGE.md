@@ -8,7 +8,11 @@ Install the `intelalloc-image` folder here:
 
 - Windows: `C:\Users\<your-user>\.codex\skills\intelalloc-image`
 - WorkBuddy on Windows: `C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image`
-- macOS/Linux: `~/.codex/skills/intelalloc-image`
+- macOS/Linux Codex: `~/.codex/skills/intelalloc-image`
+- WorkBuddy on macOS: `~/.workbuddy-ai/skills/intelalloc-image`
+
+On macOS, use `python3` instead of `python` for direct CLI commands when the
+`python` command is unavailable.
 
 Restart or refresh Codex after installation.
 
@@ -398,9 +402,13 @@ For any generation/editing request failure, Codex should show the returned failu
 把 `intelalloc-image` 文件夹放到 Codex skills 目录：
 
 - Windows: `C:\Users\<你的用户名>\.codex\skills\intelalloc-image`
-- macOS/Linux: `~/.codex/skills/intelalloc-image`
+- macOS/Linux 的 Codex：`~/.codex/skills/intelalloc-image`
 
-WorkBuddy Windows：`C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image`
+Windows WorkBuddy：`C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image`
+
+macOS WorkBuddy：`~/.workbuddy-ai/skills/intelalloc-image`
+
+在 macOS 直接运行命令时，如果系统没有 `python` 命令，请使用 `python3`。
 
 如果你下载的是 `intelalloc-image-release.zip`，先解压它，再解压里面的 `intelalloc-image.zip`，把得到的 `intelalloc-image` 文件夹放到上面的目录。安装后重启或刷新 Codex。
 

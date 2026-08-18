@@ -98,19 +98,25 @@ Windows:
 C:\Users\<user>\.codex\skills\intelalloc-image
 ```
 
-WorkBuddy:
+WorkBuddy on Windows:
 
 ```text
 C:\Users\<user>\.workbuddy-ai\skills\intelalloc-image
 ```
 
-macOS / Linux:
+WorkBuddy on macOS:
+
+```text
+~/.workbuddy-ai/skills/intelalloc-image
+```
+
+Codex on macOS / Linux:
 
 ```text
 ~/.codex/skills/intelalloc-image
 ```
 
-WorkBuddy integrations use the corresponding `~/.workbuddy-ai/skills/intelalloc-image` directory.
+WorkBuddy integrations on Windows and macOS use the corresponding `.workbuddy-ai/skills/intelalloc-image` directory under the user's home directory. On macOS, use `python3` for direct CLI examples when `python` is unavailable.
 
 Restart or refresh Codex after installation.
 
@@ -247,13 +253,19 @@ Windows:
 C:\Users\<用户名>\.codex\skills\intelalloc-image
 ```
 
-WorkBuddy：
+Windows WorkBuddy：
 
 ```text
 C:\Users\<用户名>\.workbuddy-ai\skills\intelalloc-image
 ```
 
-macOS / Linux:
+macOS WorkBuddy：
+
+```text
+~/.workbuddy-ai/skills/intelalloc-image
+```
+
+macOS / Linux 的 Codex：
 
 ```text
 ~/.codex/skills/intelalloc-image

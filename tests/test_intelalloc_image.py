@@ -259,6 +259,27 @@ class RuntimeArgumentTests(unittest.TestCase):
 
 
 class HostStateIsolationTests(unittest.TestCase):
+    def test_workbuddy_paths_are_macos_home_relative(self):
+        mac_home = pathlib.PurePosixPath("/Users/tester")
+        with mock.patch.object(MODULE.pathlib.Path, "home", return_value=mac_home), mock.patch.object(
+            MODULE.platform, "system", return_value="Darwin"
+        ):
+            self.assertEqual(
+                MODULE.config_path("workbuddy"),
+                pathlib.PurePosixPath("/Users/tester/.workbuddy-ai/intelalloc-image/config.json"),
+            )
+            self.assertEqual(
+                MODULE.history_path("workbuddy"),
+                pathlib.PurePosixPath("/Users/tester/.workbuddy-ai/intelalloc-image/history.json"),
+            )
+            self.assertEqual(
+                MODULE.workbuddy_models_path(), pathlib.PurePosixPath("/Users/tester/.workbuddy-ai/models.json")
+            )
+            self.assertEqual(
+                MODULE.default_output_dir("workbuddy"),
+                pathlib.PurePosixPath("/Users/tester/Pictures/IntelAlloc/WorkBuddy"),
+            )
+
     def test_paths_and_default_outputs_are_host_specific(self):
         with tempfile.TemporaryDirectory() as directory, mock.patch.object(
             MODULE.pathlib.Path, "home", return_value=pathlib.Path(directory)

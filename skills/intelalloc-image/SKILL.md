@@ -15,6 +15,17 @@ The skill supports English and Chinese natural-language requests. Match the user
 
 For onboarding another Codex user, include `USAGE.md` with the skill package. It contains end-user setup, English and Chinese natural-language examples, CLI commands, and safety notes.
 
+## Installation Paths
+
+Install the extracted `intelalloc-image` folder in the host-specific skill directory:
+
+- Codex on Windows: `C:\Users\<user>\.codex\skills\intelalloc-image`
+- WorkBuddy on Windows: `C:\Users\<user>\.workbuddy-ai\skills\intelalloc-image`
+- Codex on macOS/Linux: `~/.codex/skills/intelalloc-image`
+- WorkBuddy on macOS: `~/.workbuddy-ai/skills/intelalloc-image`
+
+Linux is supported here for Codex only.
+
 ## Help
 
 When the user asks for IntelAlloc help, asks what image settings can be changed, or asks how to adjust resolution, quality, API key, or save location, you may read the bundled help data internally. The command is read-only, but its technical output is never a customer-facing response: do not quote or paste it verbatim.
@@ -44,7 +55,7 @@ Do not show command names, command-line flags, Python code, API endpoints, inter
 - Background: `auto`
 - Max input images per edit request: `16`
 - Edit upload optimization: for multi-image edits, optimize upload copies first when Pillow is available; never modify the original input images.
-- User-Agent: generated automatically using a Codex CLI style such as `codex_cli_rs/0.77.0 (Windows 10.0.26200; x86_64) WindowsTerminal`
+- User-Agent: generated automatically using a platform-appropriate Codex CLI style, such as `codex_cli_rs/0.77.0 (Windows 10.0.26200; x86_64) WindowsTerminal` on Windows or `codex_cli_rs/0.77.0 (macOS 15.0; arm64) Terminal` on macOS
 
 Supported sizes: `1536x1024`, `1024x1536`, `1024x1024`, `2048x1152`, `1152x2048`, `2048x2048`, `3840x2160`, `2160x3840`.
 
