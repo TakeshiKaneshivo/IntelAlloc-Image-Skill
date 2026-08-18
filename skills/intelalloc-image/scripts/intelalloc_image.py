@@ -82,8 +82,12 @@ API key / API key:
   手动设置：configure --api-key \"<你的 IntelAlloc GPT key>\"
 
 Output / 保存:
-  No path: saves under ~/Pictures/IntelAlloc
-  不指定路径：保存到 ~/Pictures/IntelAlloc
+  Codex: saves under ~/Pictures/IntelAlloc/Codex
+  WorkBuddy: saves under ~/Pictures/IntelAlloc/WorkBuddy
+  Unknown host: keeps ~/Pictures/IntelAlloc
+  Codex：保存到 ~/Pictures/IntelAlloc/Codex
+  WorkBuddy：保存到 ~/Pictures/IntelAlloc/WorkBuddy
+  未知宿主：保留 ~/Pictures/IntelAlloc
   --output <file>       Save to an exact file / 保存到指定文件
   --output-dir <dir>    Save in a directory / 保存到指定目录
 

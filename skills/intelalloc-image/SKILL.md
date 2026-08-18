@@ -27,7 +27,7 @@ Answer in the user's language and use ordinary language. A normal help reply sho
 - process images in a folder one by one; and
 - choose the image size, quality, and save location when the user asks.
 
-Explain that the default is a large landscape image (2048 x 1152) at medium quality, and that results are automatically saved in the system Pictures folder under `IntelAlloc` when no location is provided. Tell the user they can simply say where to save a file or folder. Explain that an eligible GPT-series runtime credential is tried automatically; if it cannot be used, ask the user to provide an IntelAlloc GPT-series API key.
+Explain that the default is a large landscape image (2048 x 1152) at medium quality, and that results are automatically saved in a host-specific folder under `IntelAlloc` when no location is provided. Tell the user they can simply say where to save a file or folder. Explain that an eligible GPT-series runtime credential is tried automatically; if it cannot be used, ask the user to provide an IntelAlloc GPT-series API key.
 
 Do not show command names, command-line flags, Python code, API endpoints, internal configuration paths, or raw help output in an ordinary help reply. Only provide CLI details when the user explicitly asks for developer, scripting, or command-line usage. Do not run configuration, diagnostics, generation, editing, or any other state-changing command for a help request alone.
 
@@ -74,7 +74,7 @@ python scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model
 python scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "..." --input-dir "/path/to/images"
 ```
 
-For WorkBuddy `configure`, `last`, and `history` calls, pass `--runtime-host workbuddy` as well so they read or write WorkBuddy's own configuration and history. Include `--runtime-model "<current-model-id>"` whenever the host has it.
+For WorkBuddy `configure`, `show-config`, `last`, and `history` calls, pass `--runtime-host workbuddy` as well so they read or write WorkBuddy's own configuration and history. Include `--runtime-model "<current-model-id>"` whenever the host has it. The host marker remains required after a key has been saved.
 
 If a request needs the API and no key is configured, naturally ask in the user's language for an IntelAlloc GPT-series model API key. Do not mention or link to external services. When the user replies with a raw `sk-...` key, do not repeat or expose it, then save it:
 

@@ -1,5 +1,7 @@
 import argparse
+import contextlib
 import importlib.util
+import io
 import json
 import pathlib
 import sys
@@ -219,6 +221,16 @@ class KeySelectionTests(unittest.TestCase):
 
 
 class RuntimeArgumentTests(unittest.TestCase):
+    def test_help_reports_host_specific_default_outputs(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(MODULE.command_help(argparse.Namespace()), 0)
+
+        help_text = output.getvalue()
+        self.assertIn("Codex: saves under ~/Pictures/IntelAlloc/Codex", help_text)
+        self.assertIn("WorkBuddy: saves under ~/Pictures/IntelAlloc/WorkBuddy", help_text)
+        self.assertIn("Unknown host: keeps ~/Pictures/IntelAlloc", help_text)
+
     def test_all_stateful_commands_accept_workbuddy_runtime_arguments(self):
         parser = MODULE.build_parser()
         commands = (

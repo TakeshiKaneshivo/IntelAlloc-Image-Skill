@@ -30,7 +30,7 @@ When no save path is specified, Codex saves unique PNGs under `~/Pictures/IntelA
 
 Ask Codex naturally for IntelAlloc image help. A normal customer-facing answer should describe the available image creation, editing, reference-image, batch, size, quality, and save-location options in plain language. It should not display command names, flags, Python code, API endpoints, or internal configuration paths.
 
-For example, you can say: “我想了解 IntelAlloc 能做什么、默认图片质量和保存位置。” Codex should answer in natural language, explain that images are saved automatically in the system Pictures folder under `IntelAlloc` when no location is given, and explain that an eligible GPT-series key is tried automatically before asking the user for a key.
+For example, you can say: “我想了解 IntelAlloc 能做什么、默认图片质量和保存位置。” Codex should answer in natural language, explain that images are saved automatically in a host-specific folder under `IntelAlloc` when no location is given, and explain that an eligible GPT-series key is tried automatically before asking the user for a key.
 
 The bundled read-only help command remains available for developers and troubleshooting; it is an internal technical reference and should not be pasted into an ordinary customer reply.
 
@@ -98,17 +98,41 @@ Windows:
 C:\Users\<user>\.codex\skills\intelalloc-image
 ```
 
+WorkBuddy:
+
+```text
+C:\Users\<user>\.workbuddy-ai\skills\intelalloc-image
+```
+
 macOS / Linux:
 
 ```text
 ~/.codex/skills/intelalloc-image
 ```
 
+WorkBuddy integrations use the corresponding `~/.workbuddy-ai/skills/intelalloc-image` directory.
+
 Restart or refresh Codex after installation.
 
 ## Common Prompts
 
 Without a specified save path, Codex saves generated and edited images under `~/Pictures/IntelAlloc/Codex`, while WorkBuddy uses `~/Pictures/IntelAlloc/WorkBuddy`; batch edits use a unique subdirectory there. A user-provided file path or directory always takes precedence.
+
+### WorkBuddy Runtime Contract
+
+WorkBuddy must provide the host on every skill command so configuration, history, and default output paths stay isolated:
+
+```text
+INTELALLOC_RUNTIME_HOST=workbuddy
+```
+
+For `generate`, `edit`, and `batch-edit`, it must also provide the exact active model ID:
+
+```text
+INTELALLOC_RUNTIME_MODEL=<current-model-id>
+```
+
+The same host marker is required for `configure`, `show-config`, `last`, and `history`; the model marker may be included when available. This remains required after an API key has been saved.
 
 Generate:
 
@@ -181,7 +205,7 @@ When an API request fails, Codex shows the returned failure reason first and rem
 
 ## Safety And Devices
 
-Codex reads `OPENAI_API_KEY` from `~/.codex/auth.json` only when no skill key is configured and the current host and model are confirmed as Codex + GPT. For WorkBuddy, when no skill key exists, the host must provide `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model-id>`; the skill reads the matching GPT model's `apiKey` from `~/.workbuddy-ai/models.json`, saves it locally, and then keeps using it until manual replacement. Once a skill key is configured, model changes do not replace it. Unknown/non-GPT contexts use local manual configuration. Skill state is host-specific: Codex uses `~/.codex/intelalloc-image/` and WorkBuddy uses `~/.workbuddy-ai/intelalloc-image/`. This includes `config.json` and `history.json`; `last` and `--from-last` never cross hosts. Unknown hosts retain the legacy Codex state path and the legacy `~/Pictures/IntelAlloc` default output directory. User-specified output paths remain unchanged.
+Codex reads `OPENAI_API_KEY` from `~/.codex/auth.json` only when no skill key is configured and the current host and model are confirmed as Codex + GPT. WorkBuddy must provide `INTELALLOC_RUNTIME_HOST=workbuddy` on every call and `INTELALLOC_RUNTIME_MODEL=<current-model-id>` for image calls; when no skill key exists, the skill reads the matching GPT model's `apiKey` from `~/.workbuddy-ai/models.json`, saves it locally, and then keeps using it until manual replacement. Once a skill key is configured, model changes do not replace it. Unknown/non-GPT contexts use local manual configuration. Skill state is host-specific: Codex uses `~/.codex/intelalloc-image/` and WorkBuddy uses `~/.workbuddy-ai/intelalloc-image/`. This includes `config.json` and `history.json`; `last` and `--from-last` never cross hosts. Unknown hosts retain the legacy Codex state path and the legacy `~/Pictures/IntelAlloc` default output directory. User-specified output paths remain unchanged.
 
 Do not share:
 
@@ -223,6 +247,12 @@ Windows:
 C:\Users\<用户名>\.codex\skills\intelalloc-image
 ```
 
+WorkBuddy：
+
+```text
+C:\Users\<用户名>\.workbuddy-ai\skills\intelalloc-image
+```
+
 macOS / Linux:
 
 ```text
@@ -235,7 +265,7 @@ macOS / Linux:
 
 直接对 Codex 说“IntelAlloc 图片帮助”，或自然地询问“可以生成和修改哪些图片”“默认质量是多少”“图片会保存到哪里”。普通回复会用中文说明生成、改图、参考图、批量处理、尺寸质量和保存位置，不要求用户记忆命令，也不会展示内部路径或密钥配置命令。
 
-未指定保存位置时，图片会自动保存到系统图片目录下的 `IntelAlloc` 文件夹；也可以直接说“保存到某个文件”或“保存到某个目录”。系统会先尝试使用符合条件的 GPT 系列模型凭据，无法自动使用时再请用户提供 IntelAlloc GPT 系列 API key。
+未指定保存位置时，图片会自动保存到系统图片目录下按宿主区分的 `IntelAlloc` 子目录；也可以直接说“保存到某个文件”或“保存到某个目录”。系统会先尝试使用符合条件的 GPT 系列模型凭据，无法自动使用时再请用户提供 IntelAlloc GPT 系列 API key。
 
 开发者或排障场景仍可使用随技能附带的只读帮助命令查看技术细节；这些命令不属于普通客户的使用方式。
 
@@ -247,7 +277,7 @@ macOS / Linux:
 配置 IntelAlloc API key：你的 key
 ```
 
-只有 skill 尚未配置 key 时，Codex 才会在确认宿主和 GPT 模型后读取 `~/.codex/auth.json` 的 `OPENAI_API_KEY`；WorkBuddy 宿主也只需在没有 skill key 时注入 `INTELALLOC_RUNTIME_HOST=workbuddy` 与 `INTELALLOC_RUNTIME_MODEL=<当前模型 ID>`，skill 会在 `~/.workbuddy-ai/models.json` 中匹配并保存对应 `apiKey`。保存后始终使用该 key，切换模型不会替换；只有手动配置新 key 才会覆盖，且不会修改宿主凭据文件。
+只有 skill 尚未配置 key 时，Codex 才会在确认宿主和 GPT 模型后读取 `~/.codex/auth.json` 的 `OPENAI_API_KEY`；WorkBuddy 每次调用都必须注入 `INTELALLOC_RUNTIME_HOST=workbuddy`，图片请求还必须注入 `INTELALLOC_RUNTIME_MODEL=<当前模型 ID>`。skill 会在 `~/.workbuddy-ai/models.json` 中匹配并保存对应 `apiKey`。保存后始终使用该 key，切换模型不会替换；只有手动配置新 key 才会覆盖，且不会修改宿主凭据文件。`configure`、`show-config`、`last` 和 `history` 也必须带宿主标记。
 
 ### 生图
 

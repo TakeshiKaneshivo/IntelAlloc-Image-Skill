@@ -7,6 +7,7 @@ This guide is for Codex users who install the `intelalloc-image` skill. You can 
 Install the `intelalloc-image` folder here:
 
 - Windows: `C:\Users\<your-user>\.codex\skills\intelalloc-image`
+- WorkBuddy on Windows: `C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image`
 - macOS/Linux: `~/.codex/skills/intelalloc-image`
 
 Restart or refresh Codex after installation.
@@ -93,7 +94,7 @@ Automatic credentials are used only for GPT-series models:
 - Codex: read `OPENAI_API_KEY` from `~/.codex/auth.json`.
 - WorkBuddy: match the current model's `id` or `name` in `~/.workbuddy-ai/models.json`, then read `apiKey`.
 
-When the skill has no configured key, WorkBuddy integration must set `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model-id>` for every `generate`, `edit`, and `batch-edit` invocation. The first valid model key is saved to `config.json` and then reused for all later requests until `configure --api-key` replaces it. Unknown hosts, unknown/non-GPT models, invalid files, and unmatched models fall back to manual configuration. Runtime model lookup is skipped while a skill key is already configured.
+WorkBuddy integration must set `INTELALLOC_RUNTIME_HOST=workbuddy` for every `generate`, `edit`, and `batch-edit` invocation, and must also set `INTELALLOC_RUNTIME_MODEL=<current-model-id>` for those image calls. The first valid model key is saved to `config.json` and then reused for all later requests until `configure --api-key` replaces it. Unknown hosts, unknown/non-GPT models, invalid files, and unmatched models fall back to manual configuration. Runtime model lookup is skipped while a skill key is already configured.
 
 Equivalent CLI form for every WorkBuddy image command:
 
@@ -103,7 +104,7 @@ python scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model
 python scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "..." --input-dir "/path/to/images"
 ```
 
-Use `--runtime-host workbuddy` for WorkBuddy `configure`, `last`, and `history` commands too, so each command uses WorkBuddy's separate state directory. Pass the current model ID whenever it is available.
+Use `--runtime-host workbuddy` for WorkBuddy `configure`, `show-config`, `last`, and `history` commands too, so each command uses WorkBuddy's separate state directory. Pass the current model ID whenever it is available. The host marker remains required after a key has been saved.
 
 Save or update the API key later:
 
@@ -234,7 +235,14 @@ Every successful generation or edit is recorded in host-specific local history:
 
 ```text
 ~/.codex/intelalloc-image/history.json
+~/.workbuddy-ai/intelalloc-image/history.json
 ```
+
+Codex commands below use the Codex history by default. WorkBuddy must include
+`--runtime-host workbuddy` on `last`, `history`, and `--from-last` commands so
+they read only WorkBuddy's history. The runtime model is not needed for the
+read-only history commands, but image requests should also pass the exact
+current model ID.
 
 Show the latest output:
 
@@ -248,10 +256,23 @@ Show recent history:
 python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py history
 ```
 
+WorkBuddy:
+
+```bash
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py last --runtime-host workbuddy
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py history --runtime-host workbuddy
+```
+
 Edit from the latest output:
 
 ```bash
 python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --from-last --prompt "make it cinematic" --output "/path/to/cinematic.png"
+```
+
+WorkBuddy (include the current model ID for this image request):
+
+```bash
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --from-last --prompt "make it cinematic" --output "/path/to/cinematic.png"
 ```
 
 Natural language:
@@ -267,6 +288,10 @@ Edit the previous image into a cinematic poster and save it to D:\out\cinematic.
 ```
 
 This works only on the same device, because history stores local file paths.
+
+The history file is selected by the runtime host. A saved skill API key does
+not remove the WorkBuddy host requirement, because the host also selects the
+configuration, history, and default output directories.
 
 ## Size And Quality
 
@@ -375,13 +400,15 @@ For any generation/editing request failure, Codex should show the returned failu
 - Windows: `C:\Users\<你的用户名>\.codex\skills\intelalloc-image`
 - macOS/Linux: `~/.codex/skills/intelalloc-image`
 
+WorkBuddy Windows：`C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image`
+
 如果你下载的是 `intelalloc-image-release.zip`，先解压它，再解压里面的 `intelalloc-image.zip`，把得到的 `intelalloc-image` 文件夹放到上面的目录。安装后重启或刷新 Codex。
 
 ### 帮助
 
 直接对 Codex 说“IntelAlloc 图片帮助”，或自然地询问“可以生成和修改哪些图片”“默认设置是什么”“结果会保存在哪里”。普通回复会用自然语言介绍生成图片、修改图片、参考图、继续处理上一张图片、批量处理、尺寸质量和保存位置，不要求用户记忆命令，也不会展示内部路径或密钥配置命令。
 
-未指定保存位置时，结果会自动保存到系统图片目录下的 `IntelAlloc` 文件夹；用户也可以直接说出要保存的文件或目录。系统会先尝试使用符合条件的 GPT 系列模型凭据，无法自动使用时再请用户提供 IntelAlloc GPT 系列 API key。
+未指定保存位置时，结果会自动保存到系统图片目录下按宿主区分的 `IntelAlloc` 子目录；用户也可以直接说出要保存的文件或目录。系统会先尝试使用符合条件的 GPT 系列模型凭据，无法自动使用时再请用户提供 IntelAlloc GPT 系列 API key。
 
 开发者或排障时仍可使用随技能附带的只读帮助命令查看技术细节；这些命令不是普通客户需要使用的方式。
 
@@ -394,7 +421,7 @@ For any generation/editing request failure, Codex should show the returned failu
 - Codex：读取 `~/.codex/auth.json` 的 `OPENAI_API_KEY`。
 - WorkBuddy：在 `~/.workbuddy-ai/models.json` 中匹配当前模型的 `id` 或 `name`，读取对应的 `apiKey`。
 
-只有 skill 尚未配置 key 时，WorkBuddy 集成才必须在每次 `generate`、`edit` 和 `batch-edit` 调用时注入 `INTELALLOC_RUNTIME_HOST=workbuddy` 和 `INTELALLOC_RUNTIME_MODEL=<当前模型 ID>`。第一次成功读取的模型 key 会保存到 `config.json`，之后一直使用，直到用户手动配置新 key。宿主未知、模型未知或非 GPT、文件无效、模型匹配失败时，改走手动配置；已有 skill key 时跳过运行时模型读取。
+WorkBuddy 集成每次 `generate`、`edit` 和 `batch-edit` 调用都必须注入 `INTELALLOC_RUNTIME_HOST=workbuddy` 和 `INTELALLOC_RUNTIME_MODEL=<当前模型 ID>`。第一次成功读取的模型 key 会保存到 `config.json`，之后一直使用，直到用户手动配置新 key。宿主未知、模型未知或非 GPT、文件无效、模型匹配失败时，改走手动配置；已有 skill key 时跳过运行时模型读取。
 
 WorkBuddy 的每个图片命令也可直接传入运行时参数：
 
@@ -404,7 +431,7 @@ python scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model
 python scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..." --input-dir "/path/to/images"
 ```
 
-WorkBuddy 调用 `configure`、`last` 和 `history` 时也必须传入 `--runtime-host workbuddy`，以使用 WorkBuddy 独立的状态目录；可以取得当前模型 ID 时一并传入。
+WorkBuddy 调用 `configure`、`show-config`、`last` 和 `history` 时也必须传入 `--runtime-host workbuddy`，以使用 WorkBuddy 独立的状态目录；可以取得当前模型 ID 时一并传入。保存 key 后仍然必须传入宿主标记。
 
 如果没有可用 key，请提供 IntelAlloc GPT 系列模型的 API key：
 
@@ -413,6 +440,20 @@ WorkBuddy 调用 `configure`、`last` 和 `history` 时也必须传入 `--runtim
 ```
 
 key 优先级为单次 `--api-key`、`INTELALLOC_API_KEY`、本地 `config.json`、当前符合条件的宿主凭据。只要 `config.json` 已有 key，后续始终使用它，切换模型也不会替换；只有用户手动配置新 key 才会覆盖。没有 key 时，每次请求都会解析当前宿主和模型并读取对应凭据，首次成功读取后保存。直接提供 `sk-...` key 后，skill 会保存该 key 并立即重试原请求，且不会回显完整 key。不会修改宿主凭据文件。`show-config` 只显示脱敏后的 key、模型匹配结果、来源和自动保存状态。
+
+### 继续处理上一张图片
+
+成功生成或编辑的记录保存在当前宿主的本地历史文件中：Codex 使用 `~/.codex/intelalloc-image/history.json`，WorkBuddy 使用 `~/.workbuddy-ai/intelalloc-image/history.json`。WorkBuddy 执行 `last`、`history` 或带 `--from-last` 的图片命令时，必须传入 `--runtime-host workbuddy`，避免读取 Codex 的历史；图片命令还必须传入准确的 `--runtime-model <当前模型 ID>`。`last` 和 `history` 只读历史，不要求模型参数。
+
+WorkBuddy 命令示例：
+
+```bash
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py last --runtime-host workbuddy
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py history --runtime-host workbuddy
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --from-last --prompt "改成电影感" --output "D:\out\cinematic.png"
+```
+
+保存 key 后仍然必须传入 WorkBuddy 宿主标记，因为它同时决定配置、历史和默认输出目录。
 
 ### 生图
 
@@ -523,7 +564,6 @@ key 优先级为单次 `--api-key`、`INTELALLOC_API_KEY`、本地 `config.json`
 ~/.codex/auth.json
 ~/.workbuddy-ai/models.json
 ~/.codex/intelalloc-image/history.json
-~/.workbuddy-ai/intelalloc-image/history.json
 ~/.workbuddy-ai/intelalloc-image/history.json
 API key
 生成图片
