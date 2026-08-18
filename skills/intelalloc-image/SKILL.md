@@ -1,19 +1,19 @@
 ---
 name: intelalloc-image
-description: Generate and edit images through the IntelAlloc image API from Codex. Use when the user asks to create images, generate pictures, edit images, modify an uploaded or local image, use reference images, process an image directory, batch-edit images, configure IntelAlloc API keys, change default image size or quality, ask for IntelAlloc image help or usage guidance, continue from the previous generated image, or troubleshoot IntelAlloc image generation/editing from Codex.
+description: Generate and edit images through the IntelAlloc image API from Codex or WorkBuddy. Use when the user asks to create images, generate pictures, edit images, modify an uploaded or local image, use reference images, process an image directory, batch-edit images, configure IntelAlloc API keys, change default image size or quality, ask for IntelAlloc image help or usage guidance, continue from the previous generated image, or troubleshoot IntelAlloc image generation/editing from Codex or WorkBuddy.
 ---
 
 # IntelAlloc Image
 
 ## Overview
 
-Use the bundled CLI to call the IntelAlloc image API for text-to-image generation, image editing, directory reference-image editing, and batch image edits. The skill is meant for Codex users on any device where this skill is installed and the IntelAlloc API is reachable.
+Use the bundled CLI to call the IntelAlloc image API for text-to-image generation, image editing, directory reference-image editing, and batch image edits. The skill is meant for Codex and WorkBuddy users on any supported device where it is installed and the IntelAlloc API is reachable.
 
 The CLI is `scripts/intelalloc_image.py`. Run it with Python 3 and standard-library dependencies only. If Pillow is installed, the CLI can use it as an optional optimization helper for edit uploads.
 
 The skill supports English and Chinese natural-language requests. Match the user's language in normal replies: answer English users in English and Chinese users in Chinese. Do not translate or rewrite raw API error bodies.
 
-For onboarding another Codex user, include `USAGE.md` with the skill package. It contains end-user setup, English and Chinese natural-language examples, CLI commands, and safety notes.
+For onboarding another Codex or WorkBuddy user, include `USAGE.md` with the skill package. It contains end-user setup, English and Chinese natural-language examples, CLI commands, and safety notes.
 
 ## Installation Paths
 
@@ -138,7 +138,7 @@ Only use `--size` or `--quality` when the user explicitly requested those values
 
 ## Edit Images
 
-Use `edit` when the user supplies local image paths, drags images into Codex with readable file paths, asks to use a directory as reference images, or says to continue from the previous generated image.
+Use `edit` when the user supplies local image paths, drags images into Codex or WorkBuddy with readable file paths, asks to use a directory as reference images, or says to continue from the previous generated image.
 
 If the user does not specify a save location, omit both output options; the CLI saves a unique PNG in the current host's default output directory. Do not ask for an output path.
 
@@ -178,7 +178,7 @@ Previous image:
 python scripts/intelalloc_image.py edit --from-last --prompt "make it cinematic" --output "/path/cinematic.png"
 ```
 
-If a dragged image is visible to Codex but no readable local path is available, ask the user for a file path. Do not try to reconstruct image bytes from the chat.
+If a dragged image is visible to the current host but no readable local path is available, ask the user for a file path. Do not try to reconstruct image bytes from the chat.
 
 ## Batch Edit Directories
 
@@ -221,7 +221,7 @@ Also surface request metadata from stderr/stdout when present:
 - `REQUEST_FINISHED_AT=<local timestamp>`
 - `REQUEST_ELAPSED_SECONDS=<seconds>`
 
-In the final Codex response, show every generated image with Markdown image syntax using `DISPLAY_IMAGE` or `DISPLAY_IMAGES`:
+In the final host response, show every generated image with Markdown image syntax using `DISPLAY_IMAGE` or `DISPLAY_IMAGES`:
 
 ```markdown
 ![generated image](/absolute/path/to/image.png)
@@ -247,8 +247,8 @@ Never replace the link text with `outputs`, another directory basename, `打开�
 - API response errors: show the CLI's plain-text error output directly. Do not summarize, translate, restructure, or replace the API's returned error body. It is acceptable to introduce it with "接口返回错误如下：".
 - If the API error body unexpectedly contains an API key, redact only the key and keep the rest of the returned text unchanged.
 - Network errors without an API response body: report the CLI error text as-is.
-- Cloudflare 1010/browser-signature errors: run `show-config` and confirm the User-Agent is the automatically generated device-derived Codex CLI style. If it still fails, the backend Cloudflare rule must allow the API path or a compatible machine-client signature.
+- Cloudflare 1010/browser-signature errors: run `show-config` and confirm the User-Agent is the automatically generated device-derived client style. If it still fails, the backend Cloudflare rule must allow the API path or a compatible machine-client signature.
 - HTTP 502 errors are not retried. Show the returned error body and the CLI's "建议稍后再试。" message.
-- On any generate/edit/batch-edit API request failure, return the failure reason and tell the user to retry or try again later. Do not write history, do not claim an output was saved, do not attempt a fallback image operation, and do not continue with unrelated actions.
+- On any generate/edit/batch-edit API request failure, return the failure reason in the current host's conversation and tell the user to retry or try again later. Do not write history, do not claim an output was saved, do not attempt a fallback image operation, and do not continue with unrelated actions.
 
 The CLI retries retryable network/upstream failures up to 2 times.

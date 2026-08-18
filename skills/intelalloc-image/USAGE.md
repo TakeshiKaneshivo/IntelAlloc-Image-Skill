@@ -1,6 +1,6 @@
 # IntelAlloc Image Skill Usage
 
-This guide is for Codex users who install the `intelalloc-image` skill. You can use natural language in English or Chinese; Codex reads this skill and calls the bundled CLI for you.
+This guide is for Codex and WorkBuddy users who install the `intelalloc-image` skill. You can use natural language in English or Chinese; the host reads this skill and calls the bundled CLI for you.
 
 ## Quick Start
 
@@ -14,7 +14,7 @@ Install the `intelalloc-image` folder here:
 On macOS, use `python3` instead of `python` for direct CLI commands when the
 `python` command is unavailable.
 
-Restart or refresh Codex after installation.
+Restart or refresh Codex or WorkBuddy after installation.
 
 Then generate an image directly, or configure a local key if an automatic runtime credential is unavailable:
 
@@ -30,9 +30,9 @@ Use IntelAlloc to generate a futuristic city at night and save it to D:\out\city
 
 ## Help
 
-Ask Codex naturally for IntelAlloc image help. A customer-facing answer should use plain language to describe creating images, editing images, using references, continuing from the latest result, batch processing, image size and quality, and save locations. It should not expose command names, flags, Python code, API endpoints, or internal configuration paths.
+Ask Codex or WorkBuddy naturally for IntelAlloc image help. A customer-facing answer should use plain language to describe creating images, editing images, using references, continuing from the latest result, batch processing, image size and quality, and save locations. It should not expose command names, flags, Python code, API endpoints, or internal configuration paths.
 
-For example: “What can IntelAlloc do, what are the default image settings, and where will the result be saved?” Codex should explain that a result is saved automatically in the system Pictures folder under `IntelAlloc` when no location is specified. The user can simply describe a file or folder location in the request. Eligible GPT-series credentials are tried automatically; if none is available, Codex asks for an IntelAlloc GPT-series API key.
+For example: “What can IntelAlloc do, what are the default image settings, and where will the result be saved?” The current host should explain that a result is saved automatically in the system Pictures folder under `IntelAlloc` when no location is specified. The user can simply describe a file or folder location in the request. Eligible GPT-series credentials are tried automatically; if none is available, the current host asks for an IntelAlloc GPT-series API key.
 
 The bundled read-only help command remains available as a developer and troubleshooting reference. Its technical output should not be pasted into a normal customer reply.
 
@@ -122,6 +122,13 @@ Check the current configuration without revealing the full key:
 python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py show-config
 ```
 
+WorkBuddy equivalents:
+
+```bash
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py configure --runtime-host workbuddy --api-key "<your-api-key>"
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py show-config --runtime-host workbuddy
+```
+
 Local config is stored outside the skill folder and isolated by host:
 
 ```text
@@ -151,6 +158,12 @@ Windows:
 python C:\Users\<your-user>\.codex\skills\intelalloc-image\scripts\intelalloc_image.py generate --prompt "future city at night" --output "D:\out\city.png"
 ```
 
+WorkBuddy:
+
+```bash
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py generate --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "future city at night" --output "/path/to/city.png"
+```
+
 Before each request, the script prints the effective size and quality:
 
 ```text
@@ -167,7 +180,7 @@ REQUEST_FINISHED_AT=...
 REQUEST_ELAPSED_SECONDS=...
 ```
 
-When generation succeeds, Codex shows the output image and links to its saved directory using the returned `DISPLAY_IMAGE` and `DISPLAY_DIRECTORY` paths.
+When generation succeeds, the current host shows the output image and links to its saved directory using the returned `DISPLAY_IMAGE` and `DISPLAY_DIRECTORY` paths.
 
 ## Edit Images
 
@@ -175,6 +188,12 @@ Edit one local image:
 
 ```bash
 python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "make this watercolor" --input "/path/to/source.png" --output "/path/to/watercolor.png"
+```
+
+WorkBuddy:
+
+```bash
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "make this watercolor" --input "/path/to/source.png" --output "/path/to/watercolor.png"
 ```
 
 Edit with multiple reference images:
@@ -185,7 +204,7 @@ python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --promp
 
 Supported input types are `.png`, `.jpg`, `.jpeg`, and `.webp`. One edit request supports at most 16 input images.
 
-If you drag an image into Codex, Codex can use it directly only when it has a readable local file path. If the dragged image does not expose a path, provide the path manually.
+If you drag an image into Codex or WorkBuddy, the current host can use it directly only when it has a readable local file path. If the dragged image does not expose a path, provide the path manually.
 
 Combine dragged images with the previous output:
 
@@ -217,6 +236,12 @@ If the folder has more than 16 supported images, narrow the folder or explicitly
 python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "use these references" --input-dir "/path/to/refs" --limit 16 --output "/path/to/poster.png"
 ```
 
+WorkBuddy folder-reference example:
+
+```bash
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "use these references" --input-dir "/path/to/refs" --output "/path/to/poster.png"
+```
+
 ## Batch Edit A Folder
 
 Without `--output-dir`, each batch creates a unique directory under the current host's default output directory. Supply `--output-dir` to use a specific directory.
@@ -231,6 +256,12 @@ Windows:
 
 ```powershell
 python C:\Users\<your-user>\.codex\skills\intelalloc-image\scripts\intelalloc_image.py batch-edit --prompt "make each image pixel art" --input-dir "D:\source" --output-dir "D:\out"
+```
+
+WorkBuddy:
+
+```bash
+python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "make each image pixel art" --input-dir "/path/to/source" --output-dir "/path/to/out"
 ```
 
 ## Continue From The Previous Image
@@ -322,7 +353,7 @@ medium
 high
 ```
 
-Codex should not pass `--size` or `--quality` unless you explicitly request a size or quality. Codex should not change default size or quality unless you explicitly ask to change defaults.
+Codex and WorkBuddy should not pass `--size` or `--quality` unless you explicitly request a size or quality. Neither host should change default size or quality unless you explicitly ask to change defaults.
 
 Single request override:
 
@@ -343,7 +374,7 @@ Set IntelAlloc default size to 2048x1152 and default quality to high
 把 IntelAlloc 默认尺寸改成 2048x1152，默认质量改成 high
 ```
 
-## Output Display In Codex
+## Output Display In Codex And WorkBuddy
 
 Successful commands return fields like:
 
@@ -355,7 +386,7 @@ DISPLAY_DIRECTORY=D:/out
 DISPLAY_DIRECTORY_LINK=[D:/out](D:/out)
 ```
 
-Codex uses `DISPLAY_IMAGE` to show the generated image directly in the conversation and outputs the exact `DISPLAY_DIRECTORY_LINK` value. Its visible link text must remain the complete path; never shorten it to `outputs`, a directory basename, or `打开保存目录`. Batch commands return `SAVED_IMAGES`, `DISPLAY_IMAGES`, and one batch `DISPLAY_DIRECTORY_LINK`; Codex should show each generated image and one full-path directory link.
+The current host uses `DISPLAY_IMAGE` to show the generated image directly in the conversation and outputs the exact `DISPLAY_DIRECTORY_LINK` value. Its visible link text must remain the complete path; never shorten it to `outputs`, a directory basename, or `打开保存目录`. Batch commands return `SAVED_IMAGES`, `DISPLAY_IMAGES`, and one batch `DISPLAY_DIRECTORY_LINK`; the current host should show each generated image and one full-path directory link.
 
 ## Common Errors
 
@@ -391,15 +422,15 @@ Input image missing: provide a valid local path.
 
 Too many input images: reduce the folder, use a smaller reference set, or explicitly limit to 16.
 
-For any generation/editing request failure, Codex should show the returned failure reason first, then remind the user to retry or try again later. It should not claim an image was saved or attempt another image operation unless the user asks.
+For any generation/editing request failure, the current host should show the returned failure reason first, then remind the user to retry or try again later. It should not claim an image was saved or attempt another image operation unless the user asks.
 
 ## 中文完整使用说明
 
-这个 skill 给 Codex 用户使用。安装后，你可以直接用中文告诉 Codex 要生成什么图、修改哪张图、输出到哪里。Codex 会读取这个 skill，并调用内置脚本完成请求。
+这个 skill 给 Codex 和 WorkBuddy 用户使用。安装后，你可以直接用中文告诉 Codex 或 WorkBuddy 要生成什么图、修改哪张图、输出到哪里。宿主会读取这个 skill，并调用内置脚本完成请求。
 
 ### 安装
 
-把 `intelalloc-image` 文件夹放到 Codex skills 目录：
+把 `intelalloc-image` 文件夹放到当前宿主的 skills 目录：
 
 - Windows: `C:\Users\<你的用户名>\.codex\skills\intelalloc-image`
 - macOS/Linux 的 Codex：`~/.codex/skills/intelalloc-image`
@@ -410,11 +441,11 @@ macOS WorkBuddy：`~/.workbuddy-ai/skills/intelalloc-image`
 
 在 macOS 直接运行命令时，如果系统没有 `python` 命令，请使用 `python3`。
 
-如果你下载的是 `intelalloc-image-release.zip`，先解压它，再解压里面的 `intelalloc-image.zip`，把得到的 `intelalloc-image` 文件夹放到上面的目录。安装后重启或刷新 Codex。
+如果你下载的是 `intelalloc-image-release.zip`，先解压它，再解压里面的 `intelalloc-image.zip`，把得到的 `intelalloc-image` 文件夹放到上面的目录。安装后重启或刷新 Codex 或 WorkBuddy。
 
 ### 帮助
 
-直接对 Codex 说“IntelAlloc 图片帮助”，或自然地询问“可以生成和修改哪些图片”“默认设置是什么”“结果会保存在哪里”。普通回复会用自然语言介绍生成图片、修改图片、参考图、继续处理上一张图片、批量处理、尺寸质量和保存位置，不要求用户记忆命令，也不会展示内部路径或密钥配置命令。
+直接对 Codex 或 WorkBuddy 说“IntelAlloc 图片帮助”，或自然地询问“可以生成和修改哪些图片”“默认设置是什么”“结果会保存在哪里”。普通回复会用自然语言介绍生成图片、修改图片、参考图、继续处理上一张图片、批量处理、尺寸质量和保存位置，不要求用户记忆命令，也不会展示内部路径或密钥配置命令。
 
 未指定保存位置时，结果会自动保存到系统图片目录下按宿主区分的 `IntelAlloc` 子目录；用户也可以直接说出要保存的文件或目录。系统会先尝试使用符合条件的 GPT 系列模型凭据，无法自动使用时再请用户提供 IntelAlloc GPT 系列 API key。
 
@@ -483,17 +514,17 @@ python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit 
 用 IntelAlloc 把 D:\images\source.png 改成水彩风，输出到 D:\out\watercolor.png
 ```
 
-也可以直接把图片文件拖进 Codex，然后说：
+也可以直接把图片文件拖进 Codex 或 WorkBuddy，然后说：
 
 ```text
 把我刚拖进来的图片改成日系动画风格，输出到 D:\out\anime.png
 ```
 
-如果 Codex 能拿到拖入图片的本地可读路径，就会直接使用这张图。如果拖入图片没有可读取路径，Codex 会要求你补充本地文件路径。
+如果当前宿主能拿到拖入图片的本地可读路径，就会直接使用这张图。如果拖入图片没有可读取路径，当前宿主会要求你补充本地文件路径。
 
 ### 拖入图片和上张图联动
 
-如果你刚生成或编辑过一张图，可以把新图片拖进 Codex，并让它和上张输出图一起参与编辑。
+如果你刚生成或编辑过一张图，可以把新图片拖进 Codex 或 WorkBuddy，并让它和上张输出图一起参与编辑。
 
 把拖入图片内容添加到上一张输出图里：
 
@@ -533,7 +564,7 @@ python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit 
 
 默认尺寸是 `2048x1152`，默认质量是 `medium`。
 
-每次请求都会显示当前使用的尺寸、质量、开始时间、结束时间和耗时。Codex 也会提醒你尺寸和质量可以更换。
+每次请求都会显示当前使用的尺寸、质量、开始时间、结束时间和耗时。当前宿主也会提醒你尺寸和质量可以更换。
 
 只修改本次请求的尺寸或质量：
 
@@ -549,7 +580,7 @@ python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit 
 
 ### 输出图片展示
 
-生成或编辑成功后，Codex 会在会话里直接展示输出图片，并原样使用 `DISPLAY_DIRECTORY_LINK`。链接文字必须是完整实际保存路径，例如 `已保存至 [D:/out](D:/out)`；禁止缩短为 `outputs`、目录名或 `打开保存目录`。批量编辑时，会展示生成图片列表和一个完整路径的批次目录链接。
+生成或编辑成功后，当前宿主会在会话里直接展示输出图片，并原样使用 `DISPLAY_DIRECTORY_LINK`。链接文字必须是完整实际保存路径，例如 `已保存至 [D:/out](D:/out)`；禁止缩短为 `outputs`、目录名或 `打开保存目录`。批量编辑时，会展示生成图片列表和一个完整路径的批次目录链接。
 
 ### 常见问题
 
@@ -558,9 +589,9 @@ python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit 
 - 上张图不存在：重新指定输入图片，或先生成一张新图。
 - HTTP 502：后端或上游服务暂时不可用，稍后重试。
 - Cloudflare 1010 / 403：运行 `show-config` 确认自动生成的 User-Agent 后重试；如果仍失败，需要后端放行该 API 客户端。
-- 参考图超过 16 张：缩小图片范围，或明确让 Codex 只取 16 张。
+- 参考图超过 16 张：缩小图片范围，或明确让当前宿主只取 16 张。
 
-请求失败时，Codex 会先显示失败原因，再提醒你重试或稍后再试，不会继续做其它图片操作。
+请求失败时，当前宿主会先显示失败原因，再提醒你重试或稍后再试，不会继续做其它图片操作。
 
 ### 安全和跨设备
 

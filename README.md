@@ -1,24 +1,24 @@
 # IntelAlloc Image Skill
 
-Codex skill for generating and editing images through the IntelAlloc image API.
+Codex and WorkBuddy skill for generating and editing images through the IntelAlloc image API.
 
-This repository supports English and Chinese users. Install the skill and talk to Codex naturally. Before image generation, it checks the runtime host and model before selecting an API key.
+This repository supports English and Chinese users. Install the skill and talk to Codex or WorkBuddy naturally. Before image generation, it checks the runtime host and model before selecting an API key.
 
 ## IntelAlloc Platform
 
-`intelalloc-image` is built specifically for the IntelAlloc platform. It is designed for Codex workflows, enabling GPT to call IntelAlloc's image-2 model reliably for image generation, image editing, reference-image workflows, and iterative follow-up edits.
+`intelalloc-image` is built specifically for the IntelAlloc platform. It supports both Codex and WorkBuddy workflows, enabling GPT to call IntelAlloc's image-2 model reliably for image generation, image editing, reference-image workflows, and iterative follow-up edits. Codex and WorkBuddy can install the skill independently and keep their local configuration, history, and default output locations separate.
 
-IntelAlloc registration: https://backend.intelalloc.com/register?promo=JINGGE
+IntelAlloc registration: [https://backend.intelalloc.com/register?promo=JINGGE](https://backend.intelalloc.com/register?promo=JINGGE)
 
 Need an invitation code? Contact takeshikaneshivo@gmail.com.
 
-![IntelAlloc Codex image workflow demo 1](docs/images/intelalloc-demo-1.png)
+![IntelAlloc Codex and WorkBuddy image workflow demo 1](docs/images/intelalloc-demo-1.png)
 
-![IntelAlloc Codex image workflow demo 2](docs/images/intelalloc-demo-2.png)
+![IntelAlloc Codex and WorkBuddy image workflow demo 2](docs/images/intelalloc-demo-2.png)
 
 ## Quick Start
 
-After installing the skill, generate an image directly:
+After installing the skill, ask Codex or WorkBuddy to generate an image directly:
 
 ```text
 Use IntelAlloc to generate a futuristic city at night and save it to D:\out\city.png
@@ -28,9 +28,9 @@ When no save path is specified, Codex saves unique PNGs under `~/Pictures/IntelA
 
 ## Help
 
-Ask Codex naturally for IntelAlloc image help. A normal customer-facing answer should describe the available image creation, editing, reference-image, batch, size, quality, and save-location options in plain language. It should not display command names, flags, Python code, API endpoints, or internal configuration paths.
+Ask Codex or WorkBuddy naturally for IntelAlloc image help. A normal customer-facing answer should describe the available image creation, editing, reference-image, batch, size, quality, and save-location options in plain language. It should not display command names, flags, Python code, API endpoints, or internal configuration paths.
 
-For example, you can say: “I want to learn what IntelAlloc can do, the default image quality, and where images are saved.” Codex should answer in natural language, explain that images are saved automatically in a host-specific folder under `IntelAlloc` when no location is given, and explain that an eligible GPT-series key is tried automatically before asking the user for a key.
+For example, you can say: “I want to learn what IntelAlloc can do, the default image quality, and where images are saved.” The current host should answer in natural language, explain that images are saved automatically in a host-specific folder under `IntelAlloc` when no location is given, and explain that an eligible GPT-series key is tried automatically before asking the user for a key.
 
 The bundled read-only help command remains available for developers and troubleshooting; it is an internal technical reference and should not be pasted into an ordinary customer reply.
 
@@ -46,7 +46,7 @@ Edit an image:
 Use IntelAlloc to edit D:\images\source.png into watercolor style and save it to D:\out\watercolor.png
 ```
 
-Drag an image file into Codex and edit it:
+Drag an image file into Codex or WorkBuddy and edit it:
 
 ```text
 Use the image I just dragged in and turn it into watercolor style, then save it to D:\out\watercolor.png
@@ -118,7 +118,7 @@ Codex on macOS / Linux:
 
 WorkBuddy integrations on Windows and macOS use the corresponding `.workbuddy-ai/skills/intelalloc-image` directory under the user's home directory. On macOS, use `python3` for direct CLI examples when `python` is unavailable.
 
-Restart or refresh Codex after installation.
+Restart or refresh Codex or WorkBuddy after installation.
 
 ## Common Prompts
 
@@ -180,7 +180,7 @@ Use IntelAlloc to generate a 3840x2160 poster with high quality and save it to D
 
 Default size is `2048x1152`; default quality is `medium`.
 
-Each request reports the active size, quality, start time, finish time, and elapsed seconds. Codex will also remind you that size and quality can be changed. Defaults are not changed unless you explicitly ask to change them.
+Each request reports the active size, quality, start time, finish time, and elapsed seconds. The current host will also remind you that size and quality can be changed. Defaults are not changed unless you explicitly ask to change them.
 
 Supported sizes:
 
@@ -205,9 +205,9 @@ low, medium, high
 - Cloudflare 1010 / 403: run `show-config` to confirm the automatically generated User-Agent, then retry. If it still fails, the backend access rule may need to allow this API client.
 - HTTP 502: the backend or upstream service is temporarily unavailable. Retry later.
 - Image path does not exist: provide a readable local file path.
-- More than 16 reference images: reduce the folder or explicitly ask Codex to limit to 16 images.
+- More than 16 reference images: reduce the folder or explicitly ask the current host to limit to 16 images.
 
-When an API request fails, Codex shows the returned failure reason first and reminds you to retry or try again later.
+When an API request fails, the current host shows the returned failure reason first and reminds you to retry or try again later.
 
 ## Safety And Devices
 
@@ -229,13 +229,13 @@ temporary files
 
 ## 中文使用说明
 
-本 skill 是 IntelAlloc 平台专用的 Codex 生图/改图工具，用于让 GPT 在 Codex 会话中稳定调用 IntelAlloc 的 image-2 模型，完成文本生图、图片编辑、参考图编辑和连续追改等工作流。
+本 skill 是 IntelAlloc 平台专用的 Codex 和 WorkBuddy 生图/改图工具，用于让 GPT 在 Codex 或 WorkBuddy 会话中稳定调用 IntelAlloc 的 image-2 模型，完成文本生图、图片编辑、参考图编辑和连续追改等工作流。
 
-IntelAlloc 平台注册链接：https://backend.intelalloc.com/register?promo=JINGGE
+IntelAlloc 平台注册链接：[https://backend.intelalloc.com/register?promo=JINGGE](https://backend.intelalloc.com/register?promo=JINGGE)
 
 需要注册邀请码可以联系：takeshikaneshivo@gmail.com
 
-这个 skill 给 Codex 用户使用。安装后，你不需要记 CLI 命令，直接用自然语言告诉 Codex 生成什么图、改哪张图、输出到哪里即可。
+这个 skill 给 Codex 和 WorkBuddy 用户使用。安装后，你不需要记 CLI 命令，直接用自然语言告诉 Codex 或 WorkBuddy 生成什么图、改哪张图、输出到哪里即可。两个宿主可以分别安装 skill，并独立保存各自的配置、历史和默认输出位置。
 
 ### 安装
 
@@ -271,11 +271,11 @@ macOS / Linux 的 Codex：
 ~/.codex/skills/intelalloc-image
 ```
 
-安装后重启或刷新 Codex。
+安装后重启或刷新 Codex 或 WorkBuddy。
 
 ### 帮助
 
-直接对 Codex 说“IntelAlloc 图片帮助”，或自然地询问“可以生成和修改哪些图片”“默认质量是多少”“图片会保存到哪里”。普通回复会用中文说明生成、改图、参考图、批量处理、尺寸质量和保存位置，不要求用户记忆命令，也不会展示内部路径或密钥配置命令。
+直接对 Codex 或 WorkBuddy 说“IntelAlloc 图片帮助”，或自然地询问“可以生成和修改哪些图片”“默认质量是多少”“图片会保存到哪里”。普通回复会用中文说明生成、改图、参考图、批量处理、尺寸质量和保存位置，不要求用户记忆命令，也不会展示内部路径或密钥配置命令。
 
 未指定保存位置时，图片会自动保存到系统图片目录下按宿主区分的 `IntelAlloc` 子目录；也可以直接说“保存到某个文件”或“保存到某个目录”。系统会先尝试使用符合条件的 GPT 系列模型凭据，无法自动使用时再请用户提供 IntelAlloc GPT 系列 API key。
 
@@ -311,17 +311,17 @@ macOS / Linux 的 Codex：
 用 IntelAlloc 把 D:\images\source.png 改成水彩风，输出到 D:\out\watercolor.png
 ```
 
-也可以直接把图片文件拖进 Codex，然后说：
+也可以直接把图片文件拖进 Codex 或 WorkBuddy，然后说：
 
 ```text
 把我刚拖进来的图片改成日系动画风格，输出到 D:\out\anime.png
 ```
 
-如果 Codex 能拿到拖入图片的本地可读路径，就会直接使用这张图。如果拖入图片没有可读取路径，Codex 会要求你补充本地文件路径。
+如果当前宿主能拿到拖入图片的本地可读路径，就会直接使用这张图。如果拖入图片没有可读取路径，当前宿主会要求你补充本地文件路径。
 
 ### 拖入图片和上张图联动
 
-如果你刚生成或编辑过一张图，可以把新图片拖进 Codex，并让它和上张输出图一起参与编辑。
+如果你刚生成或编辑过一张图，可以把新图片拖进 Codex 或 WorkBuddy，并让它和上张输出图一起参与编辑。
 
 把拖入图片内容添加到上一张输出图里：
 
@@ -359,7 +359,7 @@ macOS / Linux 的 Codex：
 
 默认尺寸是 `2048x1152`，默认质量是 `medium`。
 
-每次请求都会显示当前使用的尺寸、质量、开始时间、结束时间和耗时。Codex 也会提醒你尺寸和质量可以更换。
+每次请求都会显示当前使用的尺寸、质量、开始时间、结束时间和耗时。当前宿主也会提醒你尺寸和质量可以更换。
 
 如果只想这一次改变尺寸或质量，可以直接说：
 
@@ -381,9 +381,9 @@ macOS / Linux 的 Codex：
 - 上张图不存在：重新指定输入图片，或先生成一张新图。
 - HTTP 502：后端或上游服务暂时不可用，稍后重试。
 - Cloudflare 1010 / 403：运行 `show-config` 确认自动生成的 User-Agent 后重试；如果仍失败，需要后端放行该 API 客户端。
-- 参考图超过 16 张：缩小图片范围，或明确让 Codex 只取 16 张。
+- 参考图超过 16 张：缩小图片范围，或明确让当前宿主只取 16 张。
 
-请求失败时，Codex 会先显示失败原因，再提醒你重试或稍后再试，不会继续做其它图片操作。
+请求失败时，当前宿主会先显示失败原因，再提醒你重试或稍后再试，不会继续做其它图片操作。
 
 ### 安全和跨设备
 
