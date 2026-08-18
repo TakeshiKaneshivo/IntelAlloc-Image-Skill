@@ -1,6 +1,6 @@
 ---
 name: intelalloc-image
-description: Generate and edit images through the IntelAlloc image API from Codex. Use when the user asks to create images, generate pictures, edit images, modify an uploaded or local image, use reference images, process an image directory, batch-edit images, configure IntelAlloc API keys, change default image size or quality, continue from the previous generated image, or troubleshoot IntelAlloc image generation/editing from Codex.
+description: Generate and edit images through the IntelAlloc image API from Codex. Use when the user asks to create images, generate pictures, edit images, modify an uploaded or local image, use reference images, process an image directory, batch-edit images, configure IntelAlloc API keys, change default image size or quality, ask for IntelAlloc image help or usage guidance, continue from the previous generated image, or troubleshoot IntelAlloc image generation/editing from Codex.
 ---
 
 # IntelAlloc Image
@@ -14,6 +14,22 @@ The CLI is `scripts/intelalloc_image.py`. Run it with Python 3 and standard-libr
 The skill supports English and Chinese natural-language requests. Match the user's language in normal replies: answer English users in English and Chinese users in Chinese. Do not translate or rewrite raw API error bodies.
 
 For onboarding another Codex user, include `USAGE.md` with the skill package. It contains end-user setup, English and Chinese natural-language examples, CLI commands, and safety notes.
+
+## Help
+
+When the user asks for IntelAlloc help, asks what image settings can be changed, or asks how to adjust resolution, quality, API key, or save location, you may read the bundled help data internally. The command is read-only, but its technical output is never a customer-facing response: do not quote or paste it verbatim.
+
+Answer in the user's language and use ordinary language. A normal help reply should explain that the skill can:
+
+- create new images from a description;
+- edit an existing image, a dragged-in image, or one or more reference images;
+- continue editing the most recent IntelAlloc image;
+- process images in a folder one by one; and
+- choose the image size, quality, and save location when the user asks.
+
+Explain that the default is a large landscape image (2048 x 1152) at medium quality, and that results are automatically saved in the system Pictures folder under `IntelAlloc` when no location is provided. Tell the user they can simply say where to save a file or folder. Explain that an eligible GPT-series runtime credential is tried automatically; if it cannot be used, ask the user to provide an IntelAlloc GPT-series API key.
+
+Do not show command names, command-line flags, Python code, API endpoints, internal configuration paths, or raw help output in an ordinary help reply. Only provide CLI details when the user explicitly asks for developer, scripting, or command-line usage. Do not run configuration, diagnostics, generation, editing, or any other state-changing command for a help request alone.
 
 ## Defaults
 
@@ -171,6 +187,7 @@ After successful commands, parse standard output lines:
 - `DISPLAY_IMAGE=<absolute path with forward slashes>`
 - `SAVED_DIRECTORY=<absolute directory path>`
 - `DISPLAY_DIRECTORY=<absolute directory path with forward slashes>`
+- `DISPLAY_DIRECTORY_LINK=<full-path Markdown link>`
 - `SAVED_IMAGES=<json array>` for batch output
 - `DISPLAY_IMAGES=<json array>` for batch output
 
@@ -190,13 +207,13 @@ In the final Codex response, show every generated image with Markdown image synt
 
 On Windows, prefer the forward-slash `DISPLAY_IMAGE` path returned by the script.
 
-After every successful generate, edit, or batch-edit command, state the saved directory and link to it using `DISPLAY_DIRECTORY`:
+After every successful generate, edit, or batch-edit command, output the CLI-returned `DISPLAY_DIRECTORY_LINK` exactly. Its visible link text must be the complete `DISPLAY_DIRECTORY` path, character for character:
 
 ```markdown
 已保存至 [D:/path/to/output-directory](D:/path/to/output-directory)
 ```
 
-For batch output, show one directory link for the full batch. Do not invent a path; use the CLI-returned `DISPLAY_DIRECTORY`.
+Never replace the link text with `outputs`, another directory basename, `打开保存目录`, or any other shortened label. For batch output, show one directory link for the full batch. Do not invent or rewrite the path.
 
 ## Failure Handling
 

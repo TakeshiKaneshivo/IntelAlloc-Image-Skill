@@ -54,6 +54,49 @@ SUPPORTED_SIZES = {
 SUPPORTED_QUALITIES = {"low", "medium", "high"}
 SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
 
+HELP_TEXT = """IntelAlloc Image Help / IntelAlloc 图片帮助
+
+Generate and edit / 生图与改图:
+  generate --prompt \"...\"             Generate one image / 生成单张图片
+  edit --prompt \"...\" --input <file> Edit an image / 编辑图片
+  batch-edit --prompt \"...\" --input-dir <dir>
+                                      Edit a directory / 批量编辑目录
+
+Size / 分辨率:
+  Request override: --size <size>      One request only / 仅当前请求
+  Persistent default: configure --default-size <size>
+                                      Save a default / 保存默认值
+  Default / 默认值: {default_size}
+  Supported / 支持: {sizes}
+
+Quality / 质量:
+  Request override: --quality low|medium|high
+  Persistent default: configure --default-quality <quality>
+  Default / 默认值: {default_quality}
+  Supported / 支持: {qualities}
+
+API key / API key:
+  Automatic credentials are checked for eligible Codex or WorkBuddy GPT runtimes.
+  符合条件的 Codex 或 WorkBuddy GPT 运行环境会自动读取凭据。
+  Manual setup: configure --api-key \"<your IntelAlloc GPT key>\"
+  手动设置：configure --api-key \"<你的 IntelAlloc GPT key>\"
+
+Output / 保存:
+  No path: saves under ~/Pictures/IntelAlloc
+  不指定路径：保存到 ~/Pictures/IntelAlloc
+  --output <file>       Save to an exact file / 保存到指定文件
+  --output-dir <dir>    Save in a directory / 保存到指定目录
+
+Diagnostics / 诊断:
+  show-config            Show settings with a masked key / 查看脱敏配置
+  last                   Show the latest output / 查看最近图片
+""".format(
+    default_size=DEFAULT_SIZE,
+    sizes=", ".join(sorted(SUPPORTED_SIZES)),
+    default_quality=DEFAULT_QUALITY,
+    qualities=", ".join(sorted(SUPPORTED_QUALITIES)),
+)
+
 
 @dataclasses.dataclass
 class UploadImage:
@@ -430,6 +473,12 @@ def resolve_settings(args: argparse.Namespace, require_key: bool) -> Dict[str, s
 
 def renderable_path(path: pathlib.Path) -> str:
     return path.resolve().as_posix()
+
+
+def directory_link(path: pathlib.Path) -> str:
+    display = renderable_path(path)
+    target = "<" + display.replace(">", "%3E") + ">" if any(char.isspace() for char in display) else display
+    return "[{0}]({1})".format(display, target)
 
 
 def ensure_parent(path: pathlib.Path) -> None:
@@ -938,6 +987,7 @@ def print_saved(path: pathlib.Path) -> None:
     print("DISPLAY_IMAGE=" + renderable_path(resolved))
     print("SAVED_DIRECTORY=" + str(resolved.parent))
     print("DISPLAY_DIRECTORY=" + renderable_path(resolved.parent))
+    print("DISPLAY_DIRECTORY_LINK=" + directory_link(resolved.parent))
 
 
 def print_saved_many(paths: Sequence[pathlib.Path]) -> None:
@@ -949,6 +999,7 @@ def print_saved_many(paths: Sequence[pathlib.Path]) -> None:
         directory = paths[0].resolve().parent
         print("SAVED_DIRECTORY=" + str(directory))
         print("DISPLAY_DIRECTORY=" + renderable_path(directory))
+        print("DISPLAY_DIRECTORY_LINK=" + directory_link(directory))
 
 
 def print_request_options(settings: Dict[str, str]) -> None:
@@ -1100,6 +1151,7 @@ def command_last(args: argparse.Namespace) -> int:
     print("DISPLAY_IMAGE=" + renderable_path(last))
     print("SAVED_DIRECTORY=" + str(last.parent.resolve()))
     print("DISPLAY_DIRECTORY=" + renderable_path(last.parent))
+    print("DISPLAY_DIRECTORY_LINK=" + directory_link(last.parent))
     print("EXISTS=" + ("true" if last.exists() else "false"))
     return 0 if last.exists() else 1
 
@@ -1108,6 +1160,12 @@ def command_history(args: argparse.Namespace) -> int:
     history = load_history()
     items = history.get("items", [])[: args.limit]
     print(json.dumps({"last_output": history.get("last_output", ""), "items": items}, ensure_ascii=False, indent=2))
+    return 0
+
+
+def command_help(args: argparse.Namespace) -> int:
+    """Print static user guidance without reading or changing local state."""
+    print(HELP_TEXT)
     return 0
 
 
@@ -1139,6 +1197,9 @@ def add_single_output_options(parser: argparse.ArgumentParser) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generate and edit images through the IntelAlloc API.")
     sub = parser.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser("help", help="Show common image settings and commands.")
+    p.set_defaults(func=command_help)
 
     p = sub.add_parser("configure", help="Save local API key and defaults.")
     p.add_argument("--api-key")

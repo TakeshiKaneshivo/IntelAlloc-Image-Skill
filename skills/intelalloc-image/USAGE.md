@@ -23,6 +23,14 @@ Use IntelAlloc to generate a futuristic city at night and save it to D:\out\city
 用 IntelAlloc 生成一张未来城市夜景，输出到 D:\out\city.png
 ```
 
+## Help
+
+Ask Codex naturally for IntelAlloc image help. A customer-facing answer should use plain language to describe creating images, editing images, using references, continuing from the latest result, batch processing, image size and quality, and save locations. It should not expose command names, flags, Python code, API endpoints, or internal configuration paths.
+
+For example: “What can IntelAlloc do, what are the default image settings, and where will the result be saved?” Codex should explain that a result is saved automatically in the system Pictures folder under `IntelAlloc` when no location is specified. The user can simply describe a file or folder location in the request. Eligible GPT-series credentials are tried automatically; if none is available, Codex asks for an IntelAlloc GPT-series API key.
+
+The bundled read-only help command remains available as a developer and troubleshooting reference. Its technical output should not be pasted into a normal customer reply.
+
 ## Natural-Language Examples
 
 Generate an image:
@@ -304,9 +312,10 @@ SAVED_IMAGE=D:\out\city.png
 DISPLAY_IMAGE=D:/out/city.png
 SAVED_DIRECTORY=D:\out
 DISPLAY_DIRECTORY=D:/out
+DISPLAY_DIRECTORY_LINK=[D:/out](D:/out)
 ```
 
-Codex uses `DISPLAY_IMAGE` to show the generated image directly in the conversation and `DISPLAY_DIRECTORY` to provide a clickable saved-directory link whose text is the actual path, for example `已保存至 [D:/out](D:/out)`. Batch commands return `SAVED_IMAGES`, `DISPLAY_IMAGES`, and one batch `DISPLAY_DIRECTORY`; Codex should show each generated image and one directory link.
+Codex uses `DISPLAY_IMAGE` to show the generated image directly in the conversation and outputs the exact `DISPLAY_DIRECTORY_LINK` value. Its visible link text must remain the complete path; never shorten it to `outputs`, a directory basename, or `打开保存目录`. Batch commands return `SAVED_IMAGES`, `DISPLAY_IMAGES`, and one batch `DISPLAY_DIRECTORY_LINK`; Codex should show each generated image and one full-path directory link.
 
 ## Common Errors
 
@@ -356,6 +365,14 @@ For any generation/editing request failure, Codex should show the returned failu
 - macOS/Linux: `~/.codex/skills/intelalloc-image`
 
 如果你下载的是 `intelalloc-image-release.zip`，先解压它，再解压里面的 `intelalloc-image.zip`，把得到的 `intelalloc-image` 文件夹放到上面的目录。安装后重启或刷新 Codex。
+
+### 帮助
+
+直接对 Codex 说“IntelAlloc 图片帮助”，或自然地询问“可以生成和修改哪些图片”“默认设置是什么”“结果会保存在哪里”。普通回复会用自然语言介绍生成图片、修改图片、参考图、继续处理上一张图片、批量处理、尺寸质量和保存位置，不要求用户记忆命令，也不会展示内部路径或密钥配置命令。
+
+未指定保存位置时，结果会自动保存到系统图片目录下的 `IntelAlloc` 文件夹；用户也可以直接说出要保存的文件或目录。系统会先尝试使用符合条件的 GPT 系列模型凭据，无法自动使用时再请用户提供 IntelAlloc GPT 系列 API key。
+
+开发者或排障时仍可使用随技能附带的只读帮助命令查看技术细节；这些命令不是普通客户需要使用的方式。
 
 ### API key 配置
 
@@ -462,7 +479,7 @@ key 优先级为单次 `--api-key`、`INTELALLOC_API_KEY`、本地 `config.json`
 
 ### 输出图片展示
 
-生成或编辑成功后，Codex 会在会话里直接展示输出图片，并提供以实际保存路径为文字的可点击目录链接，例如 `已保存至 [D:/out](D:/out)`。批量编辑时，会展示生成图片列表和一个批次保存目录链接。
+生成或编辑成功后，Codex 会在会话里直接展示输出图片，并原样使用 `DISPLAY_DIRECTORY_LINK`。链接文字必须是完整实际保存路径，例如 `已保存至 [D:/out](D:/out)`；禁止缩短为 `outputs`、目录名或 `打开保存目录`。批量编辑时，会展示生成图片列表和一个完整路径的批次目录链接。
 
 ### 常见问题
 

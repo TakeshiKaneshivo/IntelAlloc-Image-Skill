@@ -24,7 +24,15 @@ After installing the skill, generate an image directly:
 Use IntelAlloc to generate a futuristic city at night and save it to D:\out\city.png
 ```
 
-When no save path is specified, the skill creates `~/Pictures/IntelAlloc` and saves a unique PNG there. Successful requests display the image and its saved directory as a clickable path, for example `已保存至 [D:/out](D:/out)`.
+When no save path is specified, the skill creates `~/Pictures/IntelAlloc` and saves a unique PNG there. Successful requests display the image and the exact full saved directory path as a clickable link. Never shorten the link text to `outputs`, a directory basename, or `打开保存目录`.
+
+## Help
+
+Ask Codex naturally for IntelAlloc image help. A normal customer-facing answer should describe the available image creation, editing, reference-image, batch, size, quality, and save-location options in plain language. It should not display command names, flags, Python code, API endpoints, or internal configuration paths.
+
+For example, you can say: “我想了解 IntelAlloc 能做什么、默认图片质量和保存位置。” Codex should answer in natural language, explain that images are saved automatically in the system Pictures folder under `IntelAlloc` when no location is given, and explain that an eligible GPT-series key is tried automatically before asking the user for a key.
+
+The bundled read-only help command remains available for developers and troubleshooting; it is an internal technical reference and should not be pasted into an ordinary customer reply.
 
 If the first request is not running on a confirmed GPT model with an eligible host credential, provide an IntelAlloc GPT-series model key locally:
 
@@ -221,6 +229,14 @@ macOS / Linux:
 
 安装后重启或刷新 Codex。
 
+### 帮助
+
+直接对 Codex 说“IntelAlloc 图片帮助”，或自然地询问“可以生成和修改哪些图片”“默认质量是多少”“图片会保存到哪里”。普通回复会用中文说明生成、改图、参考图、批量处理、尺寸质量和保存位置，不要求用户记忆命令，也不会展示内部路径或密钥配置命令。
+
+未指定保存位置时，图片会自动保存到系统图片目录下的 `IntelAlloc` 文件夹；也可以直接说“保存到某个文件”或“保存到某个目录”。系统会先尝试使用符合条件的 GPT 系列模型凭据，无法自动使用时再请用户提供 IntelAlloc GPT 系列 API key。
+
+开发者或排障场景仍可使用随技能附带的只读帮助命令查看技术细节；这些命令不属于普通客户的使用方式。
+
 ### API key 配置
 
 安装后无需初始化。本地还没有 key 时，第一次正式生图会检查当前宿主和模型。只有确认是 GPT 系列模型时才自动读取宿主凭据并保存到本地；否则请提供 IntelAlloc GPT 系列模型的 API key：
@@ -233,7 +249,7 @@ Codex 确认宿主和 GPT 模型后读取 `~/.codex/auth.json` 的 `OPENAI_API_K
 
 ### 生图
 
-未指定保存路径时，skill 会自动创建 `~/Pictures/IntelAlloc` 并保存唯一 PNG；批量编辑会在其中创建唯一批次目录。请求成功后会展示图片和以实际保存路径为文字的可点击目录链接，例如 `已保存至 [D:/out](D:/out)`。用户提供文件路径或目录时，始终使用客户提供的路径。
+未指定保存路径时，skill 会自动创建 `~/Pictures/IntelAlloc` 并保存唯一 PNG；批量编辑会在其中创建唯一批次目录。请求成功后会展示图片和以完整实际保存路径为文字的可点击目录链接。禁止将链接文字缩短为 `outputs`、目录名、`打开保存目录` 或其他简化文本。用户提供文件路径或目录时，始终使用客户提供的路径。
 
 ```text
 用 IntelAlloc 生成一张未来城市夜景，输出到 D:\out\city.png
