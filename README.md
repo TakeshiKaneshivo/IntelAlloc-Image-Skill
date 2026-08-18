@@ -24,7 +24,7 @@ After installing the skill, ask Codex or WorkBuddy to generate an image directly
 Use IntelAlloc to generate a futuristic city at night and save it to D:\out\city.png
 ```
 
-When no save path is specified, Codex saves unique PNGs under `~/Pictures/IntelAlloc/Codex` and WorkBuddy saves them under `~/Pictures/IntelAlloc/WorkBuddy`. Successful requests display the image and a clickable link to the full saved directory path.
+When no save path is specified, Codex saves unique PNGs under `~/Pictures/IntelAlloc/Codex` and WorkBuddy saves them under `~/Pictures/IntelAlloc/WorkBuddy`. Successful requests display the image and a clickable link to the complete saved directory path.
 
 ## Help
 

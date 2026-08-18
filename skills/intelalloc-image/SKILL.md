@@ -9,7 +9,7 @@ description: Generate and edit images through the IntelAlloc image API from Code
 
 Use the bundled CLI to call the IntelAlloc image API for text-to-image generation, image editing, directory reference-image editing, and batch image edits. The skill is meant for Codex and WorkBuddy users on any supported device where it is installed and the IntelAlloc API is reachable.
 
-The CLI is `scripts/intelalloc_image.py`. Run it with Python 3 and standard-library dependencies only. If Pillow is installed, the CLI can use it as an optional optimization helper for edit uploads.
+The CLI is `scripts/intelalloc_image.py`. Run it with Python 3 and standard-library dependencies only. On macOS, use `python3` when `python` is unavailable. If Pillow is installed, the CLI can use it as an optional optimization helper for edit uploads.
 
 The skill supports English and Chinese natural-language requests. Match the user's language in normal replies: answer English users in English and Chinese users in Chinese. Do not translate or rewrite raw API error bodies.
 
@@ -55,7 +55,7 @@ Do not show command names, command-line flags, Python code, API endpoints, inter
 - Background: `auto`
 - Max input images per edit request: `16`
 - Edit upload optimization: for multi-image edits, optimize upload copies first when Pillow is available; never modify the original input images.
-- User-Agent: generated automatically using a platform-appropriate Codex CLI style, such as `codex_cli_rs/0.77.0 (Windows 10.0.26200; x86_64) WindowsTerminal` on Windows or `codex_cli_rs/0.77.0 (macOS 15.0; arm64) Terminal` on macOS
+- User-Agent: generated automatically using a platform-appropriate client CLI style, such as `codex_cli_rs/0.77.0 (Windows 10.0.26200; x86_64) WindowsTerminal` on Windows or `codex_cli_rs/0.77.0 (macOS 15.0; arm64) Terminal` on macOS
 
 Supported sizes: `1536x1024`, `1024x1536`, `1024x1024`, `2048x1152`, `1152x2048`, `2048x2048`, `3840x2160`, `2160x3840`.
 
@@ -229,13 +229,13 @@ In the final host response, show every generated image with Markdown image synta
 
 On Windows, prefer the forward-slash `DISPLAY_IMAGE` path returned by the script.
 
-After every successful generate, edit, or batch-edit command, output the CLI-returned `DISPLAY_DIRECTORY_LINK` exactly. Its visible link text must be the complete `DISPLAY_DIRECTORY` path, character for character:
+After every successful generate, edit, or batch-edit command, show the complete saved directory path as a clickable Markdown link. Use the path returned by the CLI exactly and do not invent, shorten, or rewrite it:
 
 ```markdown
-已保存至 [D:/path/to/output-directory](D:/path/to/output-directory)
+Saved to [D:/path/to/output-directory](D:/path/to/output-directory)
 ```
 
-Never replace the link text with `outputs`, another directory basename, `打开保存目录`, or any other shortened label. For batch output, show one directory link for the full batch. Do not invent or rewrite the path.
+For batch output, show one clickable link for the complete batch directory.
 
 ## Failure Handling
 
@@ -244,11 +244,11 @@ Never replace the link text with `outputs`, another directory basename, `打开�
 - More than 16 edit inputs: ask the user to reduce inputs or explicitly allow `--limit 16`.
 - Missing `last_output`: ask the user to specify an input image path.
 - Deleted `last_output`: report the missing file and ask for a replacement input path.
-- API response errors: show the CLI's plain-text error output directly. Do not summarize, translate, restructure, or replace the API's returned error body. It is acceptable to introduce it with "接口返回错误如下：".
+- API response errors: show the CLI's plain-text error output directly. Do not summarize, translate, restructure, or replace the API's returned error body. It is acceptable to introduce it with "The API returned the following error:".
 - If the API error body unexpectedly contains an API key, redact only the key and keep the rest of the returned text unchanged.
 - Network errors without an API response body: report the CLI error text as-is.
 - Cloudflare 1010/browser-signature errors: run `show-config` and confirm the User-Agent is the automatically generated device-derived client style. If it still fails, the backend Cloudflare rule must allow the API path or a compatible machine-client signature.
-- HTTP 502 errors are not retried. Show the returned error body and the CLI's "建议稍后再试。" message.
+- HTTP 502 errors are not retried. Show the returned error body and tell the user to try again later.
 - On any generate/edit/batch-edit API request failure, return the failure reason in the current host's conversation and tell the user to retry or try again later. Do not write history, do not claim an output was saved, do not attempt a fallback image operation, and do not continue with unrelated actions.
 
 The CLI retries retryable network/upstream failures up to 2 times.

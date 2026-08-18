@@ -22,12 +22,6 @@ Then generate an image directly, or configure a local key if an automatic runtim
 Use IntelAlloc to generate a futuristic city at night and save it to D:\out\city.png
 ```
 
-中文示例：
-
-```text
-用 IntelAlloc 生成一张未来城市夜景，输出到 D:\out\city.png
-```
-
 ## Help
 
 Ask Codex or WorkBuddy naturally for IntelAlloc image help. A customer-facing answer should use plain language to describe creating images, editing images, using references, continuing from the latest result, batch processing, image size and quality, and save locations. It should not expose command names, flags, Python code, API endpoints, or internal configuration paths.
@@ -78,17 +72,6 @@ Batch edit a folder:
 Batch edit images in D:\source into pixel art style and save outputs to D:\out
 ```
 
-中文示例：
-
-```text
-用 IntelAlloc 把 D:\images\a.png 改成日系动画风格，输出到 D:\out\a_anime.png
-基于上张图继续改成电影海报风格，输出到 D:\out\poster.png
-把我刚拖进来的图片内容添加到上张输出图里，保持整体风格一致，输出到 D:\out\result.png
-把我刚拖进来的图片作为参考，基于上张图改成同样风格，输出到 D:\out\result.png
-读取 D:\refs 里的图片作为参考，生成一张产品海报，输出到 D:\out\poster.png
-批量把 D:\source 里的图片改成像素风，输出到 D:\out
-```
-
 ## API Key Configuration
 
 The skill works immediately after installation. Before every API request, the host integration must provide the runtime host and exact current model ID. For WorkBuddy, pass `--runtime-host workbuddy --runtime-model <current-model-id>` or set `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model-id>`; do not rely on the first `models.json` entry.
@@ -122,11 +105,18 @@ Check the current configuration without revealing the full key:
 python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py show-config
 ```
 
-WorkBuddy equivalents:
+WorkBuddy on macOS:
 
 ```bash
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py configure --runtime-host workbuddy --api-key "<your-api-key>"
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py show-config --runtime-host workbuddy
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py configure --runtime-host workbuddy --api-key "<your-api-key>"
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py show-config --runtime-host workbuddy
+```
+
+WorkBuddy on Windows (PowerShell):
+
+```powershell
+python C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py configure --runtime-host workbuddy --api-key "<your-api-key>"
+python C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py show-config --runtime-host workbuddy
 ```
 
 Local config is stored outside the skill folder and isolated by host:
@@ -158,10 +148,16 @@ Windows:
 python C:\Users\<your-user>\.codex\skills\intelalloc-image\scripts\intelalloc_image.py generate --prompt "future city at night" --output "D:\out\city.png"
 ```
 
-WorkBuddy:
+WorkBuddy on macOS:
 
 ```bash
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py generate --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "future city at night" --output "/path/to/city.png"
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py generate --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "future city at night" --output "/path/to/city.png"
+```
+
+WorkBuddy on Windows (PowerShell):
+
+```powershell
+python C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py generate --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "future city at night" --output "D:\out\city.png"
 ```
 
 Before each request, the script prints the effective size and quality:
@@ -180,7 +176,7 @@ REQUEST_FINISHED_AT=...
 REQUEST_ELAPSED_SECONDS=...
 ```
 
-When generation succeeds, the current host shows the output image and links to its saved directory using the returned `DISPLAY_IMAGE` and `DISPLAY_DIRECTORY` paths.
+When generation succeeds, the current host shows the output image and provides a clickable link to the complete saved directory path.
 
 ## Edit Images
 
@@ -190,10 +186,16 @@ Edit one local image:
 python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "make this watercolor" --input "/path/to/source.png" --output "/path/to/watercolor.png"
 ```
 
-WorkBuddy:
+WorkBuddy on macOS:
 
 ```bash
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "make this watercolor" --input "/path/to/source.png" --output "/path/to/watercolor.png"
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "make this watercolor" --input "/path/to/source.png" --output "/path/to/watercolor.png"
+```
+
+WorkBuddy on Windows (PowerShell):
+
+```powershell
+python C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "make this watercolor" --input "D:\images\source.png" --output "D:\out\watercolor.png"
 ```
 
 Edit with multiple reference images:
@@ -236,10 +238,16 @@ If the folder has more than 16 supported images, narrow the folder or explicitly
 python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "use these references" --input-dir "/path/to/refs" --limit 16 --output "/path/to/poster.png"
 ```
 
-WorkBuddy folder-reference example:
+WorkBuddy on macOS folder-reference example:
 
 ```bash
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "use these references" --input-dir "/path/to/refs" --output "/path/to/poster.png"
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "use these references" --input-dir "/path/to/refs" --output "/path/to/poster.png"
+```
+
+WorkBuddy on Windows (PowerShell):
+
+```powershell
+python C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "use these references" --input-dir "D:\refs" --output "D:\out\poster.png"
 ```
 
 ## Batch Edit A Folder
@@ -258,10 +266,16 @@ Windows:
 python C:\Users\<your-user>\.codex\skills\intelalloc-image\scripts\intelalloc_image.py batch-edit --prompt "make each image pixel art" --input-dir "D:\source" --output-dir "D:\out"
 ```
 
-WorkBuddy:
+WorkBuddy on macOS:
 
 ```bash
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "make each image pixel art" --input-dir "/path/to/source" --output-dir "/path/to/out"
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "make each image pixel art" --input-dir "/path/to/source" --output-dir "/path/to/out"
+```
+
+WorkBuddy on Windows (PowerShell):
+
+```powershell
+python C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "make each image pixel art" --input-dir "D:\source" --output-dir "D:\out"
 ```
 
 ## Continue From The Previous Image
@@ -291,11 +305,18 @@ Show recent history:
 python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py history
 ```
 
-WorkBuddy:
+WorkBuddy on macOS:
 
 ```bash
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py last --runtime-host workbuddy
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py history --runtime-host workbuddy
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py last --runtime-host workbuddy
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py history --runtime-host workbuddy
+```
+
+WorkBuddy on Windows (PowerShell):
+
+```powershell
+python C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py last --runtime-host workbuddy
+python C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py history --runtime-host workbuddy
 ```
 
 Edit from the latest output:
@@ -304,22 +325,22 @@ Edit from the latest output:
 python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --from-last --prompt "make it cinematic" --output "/path/to/cinematic.png"
 ```
 
-WorkBuddy (include the current model ID for this image request):
+WorkBuddy on macOS (include the current model ID for this image request):
 
 ```bash
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --from-last --prompt "make it cinematic" --output "/path/to/cinematic.png"
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --from-last --prompt "make it cinematic" --output "/path/to/cinematic.png"
+```
+
+WorkBuddy on Windows (PowerShell):
+
+```powershell
+python C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --from-last --prompt "make it cinematic" --output "D:\out\cinematic.png"
 ```
 
 Natural language:
 
 ```text
 Edit the previous image into a cinematic poster and save it to D:\out\cinematic.png
-```
-
-中文示例：
-
-```text
-基于上张图改成电影感，输出到 D:\out\cinematic.png
 ```
 
 This works only on the same device, because history stores local file paths.
@@ -367,26 +388,9 @@ Change defaults for future requests:
 Set IntelAlloc default size to 2048x1152 and default quality to high
 ```
 
-中文示例：
-
-```text
-用 IntelAlloc 生成一张 3840x2160 的海报，质量 high，输出到 D:\out\poster.png
-把 IntelAlloc 默认尺寸改成 2048x1152，默认质量改成 high
-```
-
 ## Output Display In Codex And WorkBuddy
 
-Successful commands return fields like:
-
-```text
-SAVED_IMAGE=D:\out\city.png
-DISPLAY_IMAGE=D:/out/city.png
-SAVED_DIRECTORY=D:\out
-DISPLAY_DIRECTORY=D:/out
-DISPLAY_DIRECTORY_LINK=[D:/out](D:/out)
-```
-
-The current host uses `DISPLAY_IMAGE` to show the generated image directly in the conversation and outputs the exact `DISPLAY_DIRECTORY_LINK` value. Its visible link text must remain the complete path; never shorten it to `outputs`, a directory basename, or `打开保存目录`. Batch commands return `SAVED_IMAGES`, `DISPLAY_IMAGES`, and one batch `DISPLAY_DIRECTORY_LINK`; the current host should show each generated image and one full-path directory link.
+After a successful generation or edit, the current host shows the generated image in the conversation and provides a clickable link to the complete saved directory path. Batch edits show the generated images and one link to the complete batch directory path.
 
 ## Common Errors
 
@@ -402,9 +406,9 @@ HTTP 502:
 
 ```text
 HTTP 502
-接口返回错误如下：
+The API returned the following error:
 ...
-建议稍后再试。
+Please try again later.
 ```
 
 Meaning: the backend or upstream service is temporarily unavailable. The skill does not retry 502; try again later.
@@ -423,6 +427,33 @@ Input image missing: provide a valid local path.
 Too many input images: reduce the folder, use a smaller reference set, or explicitly limit to 16.
 
 For any generation/editing request failure, the current host should show the returned failure reason first, then remind the user to retry or try again later. It should not claim an image was saved or attempt another image operation unless the user asks.
+
+## Cross-Device Notes
+
+The skill folder can be the same on every device.
+
+Each device needs its own:
+
+- API key configuration only when an automatic runtime credential is unavailable
+- local output paths
+- local history
+- optional User-Agent override if that device hits Cloudflare rules
+
+Do not share:
+
+```text
+~/.codex/intelalloc-image/config.json
+~/.workbuddy-ai/intelalloc-image/config.json
+~/.codex/auth.json
+~/.workbuddy-ai/models.json
+~/.codex/intelalloc-image/history.json
+~/.workbuddy-ai/intelalloc-image/history.json
+API keys
+generated images
+temporary files
+```
+
+The phrase "previous image" only works on the same device where that image was generated and still exists.
 
 ## 中文完整使用说明
 
@@ -486,10 +517,20 @@ key 优先级为单次 `--api-key`、`INTELALLOC_API_KEY`、本地 `config.json`
 
 WorkBuddy 命令示例：
 
+macOS WorkBuddy：
+
 ```bash
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py last --runtime-host workbuddy
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py history --runtime-host workbuddy
-python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --from-last --prompt "改成电影感" --output "D:\out\cinematic.png"
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py last --runtime-host workbuddy
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py history --runtime-host workbuddy
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --from-last --prompt "改成电影感" --output "/path/to/cinematic.png"
+```
+
+Windows WorkBuddy（PowerShell）：
+
+```powershell
+python C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py last --runtime-host workbuddy
+python C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py history --runtime-host workbuddy
+python C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --from-last --prompt "改成电影感" --output "D:\out\cinematic.png"
 ```
 
 保存 key 后仍然必须传入 WorkBuddy 宿主标记，因为它同时决定配置、历史和默认输出目录。
@@ -580,7 +621,7 @@ python ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit 
 
 ### 输出图片展示
 
-生成或编辑成功后，当前宿主会在会话里直接展示输出图片，并原样使用 `DISPLAY_DIRECTORY_LINK`。链接文字必须是完整实际保存路径，例如 `已保存至 [D:/out](D:/out)`；禁止缩短为 `outputs`、目录名或 `打开保存目录`。批量编辑时，会展示生成图片列表和一个完整路径的批次目录链接。
+生成或编辑成功后，当前宿主会在会话里直接展示输出图片，并提供指向完整实际保存目录的可点击链接。批量编辑时，会展示生成图片列表和一个指向完整批次目录的链接。
 
 ### 常见问题
 
@@ -610,30 +651,3 @@ API key
 ```
 
 历史记录和“上张图”只在当前设备可靠，换设备后不会自动同步。
-
-## Cross-Device Notes
-
-The skill folder can be the same on every device.
-
-Each device needs its own:
-
-- API key configuration only when an automatic runtime credential is unavailable
-- local output paths
-- local history
-- optional User-Agent override if that device hits Cloudflare rules
-
-Do not share:
-
-```text
-~/.codex/intelalloc-image/config.json
-~/.workbuddy-ai/intelalloc-image/config.json
-~/.codex/auth.json
-~/.workbuddy-ai/models.json
-~/.codex/intelalloc-image/history.json
-~/.workbuddy-ai/intelalloc-image/history.json
-API keys
-generated images
-temporary files
-```
-
-The phrase "previous image" or "上张图" only works on the same device where that image was generated and still exists.
