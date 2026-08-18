@@ -52,24 +52,35 @@ Supported qualities: `low`, `medium`, `high`.
 
 ## Configuration
 
-Store manually configured settings in `~/.codex/intelalloc-image/config.json`. On the first API request without a local key, an eligible automatic credential is copied to this local config after the runtime host and model are checked. Never put API keys, generated images, history, or user config inside the skill folder.
+Store manually configured settings outside the skill folder: Codex uses `~/.codex/intelalloc-image/config.json`; WorkBuddy uses `~/.workbuddy-ai/intelalloc-image/config.json`. On the first API request without a local key, an eligible automatic credential is copied to the current host's local config after the runtime host and model are checked. Never put API keys, generated images, history, or user config inside the skill folder.
 
 Config precedence:
 
 1. Single-request CLI `--api-key`
 2. `INTELALLOC_API_KEY` environment variable
-3. Manually configured `~/.codex/intelalloc-image/config.json`
+3. Manually configured host-specific `config.json`
 4. Eligible host-specific GPT credential
 5. Built-in defaults
 
-Before `generate`, `edit`, or `batch-edit`, resolve runtime context. Pass `--runtime-host codex|workbuddy` and `--runtime-model <model>` when the host exposes them; otherwise use `INTELALLOC_RUNTIME_HOST` and `INTELALLOC_RUNTIME_MODEL`. Codex runtime markers may identify Codex automatically, and Codex falls back to the `model` in `~/.codex/config.toml`. WorkBuddy integration must inject both `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model>` for every skill invocation; never assume the first `models.json` entry is active.
+Before every `generate`, `edit`, or `batch-edit`, resolve runtime context. For WorkBuddy, the host integration MUST pass the exact active model ID and host on every invocation, either as `--runtime-host workbuddy --runtime-model <current-model-id>` or as `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model-id>`. Do not infer the active model from the first `models.json` entry or from the image API `--model` option. Codex runtime markers may identify Codex automatically, and Codex falls back to the `model` in `~/.codex/config.toml`.
 
-Only a GPT-series model enables automatic credentials. For Codex, read `OPENAI_API_KEY` from `~/.codex/auth.json`. For WorkBuddy, match the injected current model's `id` or `name` in `~/.workbuddy-ai/models.json` and read its `apiKey`. When no local key exists, save the first valid automatic key to `config.json`; later requests keep using that local key until `configure --api-key` replaces it. Do not read either automatic credential when the host is unknown, the model is unknown/non-GPT, or the file/model entry is invalid.
+Only a GPT-series model enables automatic credentials. For Codex, read `OPENAI_API_KEY` from `~/.codex/auth.json`. For WorkBuddy, when no key is configured in the skill, match the current model's `id` or `name` in `~/.workbuddy-ai/models.json` and read its `apiKey`. Save the first valid automatic key to `config.json`; once saved, always use that key until `configure --api-key` replaces it. Do not re-read host credentials when a skill key is already configured. If no key is configured, do not read automatic credentials when the host is unknown, the model is unknown/non-GPT, or the file/model entry is invalid.
+
+For WorkBuddy, every image command MUST include the runtime arguments. Append them to the command rather than relying on the shell to inherit them:
+
+```bash
+python scripts/intelalloc_image.py generate --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "..."
+python scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "..." --input "/path/to/input.png"
+python scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "..." --input-dir "/path/to/images"
+```
+
+For WorkBuddy `configure`, `last`, and `history` calls, pass `--runtime-host workbuddy` as well so they read or write WorkBuddy's own configuration and history. Include `--runtime-model "<current-model-id>"` whenever the host has it.
 
 If a request needs the API and no key is configured, naturally ask in the user's language for an IntelAlloc GPT-series model API key. Do not mention or link to external services. When the user replies with a raw `sk-...` key, do not repeat or expose it, then save it:
 
 ```bash
 python scripts/intelalloc_image.py configure --api-key "<key>"
+# WorkBuddy: append --runtime-host workbuddy --runtime-model "<current-model-id>"
 ```
 
 After saving the key, immediately repeat the original generate, edit, or batch-edit request with its original prompt, inputs, size, quality, and output behavior. Do not ask the user to repeat the request or confirm the key format.
@@ -100,7 +111,7 @@ python scripts/intelalloc_image.py show-config
 
 ## Generate Images
 
-Use `generate` for text-to-image. If the user does not specify a save location, omit both output options; the CLI saves a unique PNG under `~/Pictures/IntelAlloc`. Do not ask for an output path. Use `--output` only for a user-specified image file path, or `--output-dir` only for a user-specified directory.
+Use `generate` for text-to-image. If the user does not specify a save location, omit both output options; the CLI saves a unique PNG under `~/Pictures/IntelAlloc/Codex` for Codex or `~/Pictures/IntelAlloc/WorkBuddy` for WorkBuddy. Do not ask for an output path. Use `--output` only for a user-specified image file path, or `--output-dir` only for a user-specified directory.
 
 ```bash
 python scripts/intelalloc_image.py generate --prompt "city at night" --output "/path/to/city.png"
@@ -118,7 +129,7 @@ Only use `--size` or `--quality` when the user explicitly requested those values
 
 Use `edit` when the user supplies local image paths, drags images into Codex with readable file paths, asks to use a directory as reference images, or says to continue from the previous generated image.
 
-If the user does not specify a save location, omit both output options; the CLI saves a unique PNG under `~/Pictures/IntelAlloc`. Do not ask for an output path.
+If the user does not specify a save location, omit both output options; the CLI saves a unique PNG in the current host's default output directory. Do not ask for an output path.
 
 Single input:
 
@@ -162,7 +173,7 @@ If a dragged image is visible to Codex but no readable local path is available, 
 
 Use `batch-edit` when the user wants to process each image in a directory into separate outputs.
 
-If the user does not specify an output directory, omit `--output-dir`; the CLI creates a unique batch directory under `~/Pictures/IntelAlloc`. Use `--output-dir` only for a user-specified directory.
+If the user does not specify an output directory, omit `--output-dir`; the CLI creates a unique batch directory in the current host's default output directory. Use `--output-dir` only for a user-specified directory.
 
 ```bash
 python scripts/intelalloc_image.py batch-edit --prompt "make each image watercolor" --input-dir "/path/source" --output-dir "/path/out"
@@ -172,7 +183,7 @@ By default, read only `.png`, `.jpg`, `.jpeg`, and `.webp` files directly inside
 
 ## History And Display
 
-The CLI writes history to `~/.codex/intelalloc-image/history.json` after every successful `generate`, `edit`, or `batch-edit`.
+The CLI writes history after every successful `generate`, `edit`, or `batch-edit`: Codex uses `~/.codex/intelalloc-image/history.json`; WorkBuddy uses `~/.workbuddy-ai/intelalloc-image/history.json`. `last` and `--from-last` use only the current host's history.
 
 Use these commands for continuity:
 

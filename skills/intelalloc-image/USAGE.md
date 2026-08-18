@@ -86,14 +86,24 @@ Batch edit images in D:\source into pixel art style and save outputs to D:\out
 
 ## API Key Configuration
 
-The skill works immediately after installation. On the first API request without a local key, it checks the runtime host and current model. Pass `--runtime-host codex|workbuddy` and `--runtime-model <model>` when available, or set `INTELALLOC_RUNTIME_HOST` and `INTELALLOC_RUNTIME_MODEL`.
+The skill works immediately after installation. Before every API request, the host integration must provide the runtime host and exact current model ID. For WorkBuddy, pass `--runtime-host workbuddy --runtime-model <current-model-id>` or set `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model-id>`; do not rely on the first `models.json` entry.
 
 Automatic credentials are used only for GPT-series models:
 
 - Codex: read `OPENAI_API_KEY` from `~/.codex/auth.json`.
 - WorkBuddy: match the current model's `id` or `name` in `~/.workbuddy-ai/models.json`, then read `apiKey`.
 
-WorkBuddy integration must set `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model>` for every skill invocation. The skill never assumes the first model entry is active. Unknown hosts, unknown/non-GPT models, invalid files, and unmatched models fall back to manual configuration.
+When the skill has no configured key, WorkBuddy integration must set `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model-id>` for every `generate`, `edit`, and `batch-edit` invocation. The first valid model key is saved to `config.json` and then reused for all later requests until `configure --api-key` replaces it. Unknown hosts, unknown/non-GPT models, invalid files, and unmatched models fall back to manual configuration. Runtime model lookup is skipped while a skill key is already configured.
+
+Equivalent CLI form for every WorkBuddy image command:
+
+```bash
+python scripts/intelalloc_image.py generate --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "..."
+python scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "..." --input "/path/to/input.png"
+python scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "..." --input-dir "/path/to/images"
+```
+
+Use `--runtime-host workbuddy` for WorkBuddy `configure`, `last`, and `history` commands too, so each command uses WorkBuddy's separate state directory. Pass the current model ID whenever it is available.
 
 Save or update the API key later:
 
@@ -107,13 +117,14 @@ Check the current configuration without revealing the full key:
 python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py show-config
 ```
 
-Local config is stored outside the skill folder:
+Local config is stored outside the skill folder and isolated by host:
 
 ```text
 ~/.codex/intelalloc-image/config.json
+~/.workbuddy-ai/intelalloc-image/config.json
 ```
 
-The key lookup order is single-request `--api-key`, `INTELALLOC_API_KEY`, the local `config.json`, then an eligible host-specific GPT credential. When no local key exists, the first eligible automatic key is copied to `config.json`; later requests use that saved key until `configure --api-key` replaces it. If no key is available, provide an IntelAlloc GPT-series model API key manually. Host credential files are never modified.
+The key lookup order is single-request `--api-key`, `INTELALLOC_API_KEY`, the local `config.json` key, then the current eligible host-specific GPT credential. Once any key is present in `config.json`, it remains the active skill key until `configure --api-key` replaces it; model changes do not replace it. When no key is configured, resolve the current runtime and read the matching host credential on every request, saving the first successful automatic key. Host credential files are never modified.
 
 `show-config` reports the detected host, model, GPT classification, automatic credential status, persisted automatic-key status and origin, and final key source without revealing any complete key.
 
@@ -121,7 +132,7 @@ Do not share either configuration file.
 
 ## Generate Images
 
-Without `--output` or `--output-dir`, a unique PNG is saved to `~/Pictures/IntelAlloc`. The directory is created after a successful response. Use `--output` for an exact file path or `--output-dir` for a user-selected directory.
+Without `--output` or `--output-dir`, Codex saves a unique PNG to `~/Pictures/IntelAlloc/Codex` and WorkBuddy saves one to `~/Pictures/IntelAlloc/WorkBuddy`. The directory is created after a successful response. Use `--output` for an exact file path or `--output-dir` for a user-selected directory.
 
 CLI form:
 
@@ -203,7 +214,7 @@ python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --promp
 
 ## Batch Edit A Folder
 
-Without `--output-dir`, each batch creates a unique directory under `~/Pictures/IntelAlloc`. Supply `--output-dir` to use a specific directory.
+Without `--output-dir`, each batch creates a unique directory under the current host's default output directory. Supply `--output-dir` to use a specific directory.
 
 Batch-edit each image in a folder into separate outputs:
 
@@ -219,7 +230,7 @@ python C:\Users\<your-user>\.codex\skills\intelalloc-image\scripts\intelalloc_im
 
 ## Continue From The Previous Image
 
-Every successful generation or edit is recorded in local history:
+Every successful generation or edit is recorded in host-specific local history:
 
 ```text
 ~/.codex/intelalloc-image/history.json
@@ -376,14 +387,24 @@ For any generation/editing request failure, Codex should show the returned failu
 
 ### API key 配置
 
-安装后无需初始化。本地尚未保存 key 时，第一次正式请求会检查当前宿主和模型。可传入 `--runtime-host codex|workbuddy` 与 `--runtime-model <模型>`，或设置 `INTELALLOC_RUNTIME_HOST` 与 `INTELALLOC_RUNTIME_MODEL`。
+安装后无需初始化。每次 API 请求前，宿主集成都必须提供运行时宿主和当前模型的准确 ID。对于 WorkBuddy，必须传入 `--runtime-host workbuddy --runtime-model <当前模型 ID>`，或设置 `INTELALLOC_RUNTIME_HOST=workbuddy` 和 `INTELALLOC_RUNTIME_MODEL=<当前模型 ID>`；不能默认使用 `models.json` 的第一项。
 
 只有 GPT 系列模型才会自动读取凭据：
 
 - Codex：读取 `~/.codex/auth.json` 的 `OPENAI_API_KEY`。
 - WorkBuddy：在 `~/.workbuddy-ai/models.json` 中匹配当前模型的 `id` 或 `name`，读取对应的 `apiKey`。
 
-WorkBuddy 集成必须在每次执行 skill 时注入 `INTELALLOC_RUNTIME_HOST=workbuddy` 和 `INTELALLOC_RUNTIME_MODEL=<当前模型>`。skill 不会默认使用 `models.json` 第一项。宿主未知、模型未知或非 GPT、文件无效、模型匹配失败时，改走手动配置。
+只有 skill 尚未配置 key 时，WorkBuddy 集成才必须在每次 `generate`、`edit` 和 `batch-edit` 调用时注入 `INTELALLOC_RUNTIME_HOST=workbuddy` 和 `INTELALLOC_RUNTIME_MODEL=<当前模型 ID>`。第一次成功读取的模型 key 会保存到 `config.json`，之后一直使用，直到用户手动配置新 key。宿主未知、模型未知或非 GPT、文件无效、模型匹配失败时，改走手动配置；已有 skill key 时跳过运行时模型读取。
+
+WorkBuddy 的每个图片命令也可直接传入运行时参数：
+
+```bash
+python scripts/intelalloc_image.py generate --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..."
+python scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..." --input "/path/to/input.png"
+python scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..." --input-dir "/path/to/images"
+```
+
+WorkBuddy 调用 `configure`、`last` 和 `history` 时也必须传入 `--runtime-host workbuddy`，以使用 WorkBuddy 独立的状态目录；可以取得当前模型 ID 时一并传入。
 
 如果没有可用 key，请提供 IntelAlloc GPT 系列模型的 API key：
 
@@ -391,11 +412,11 @@ WorkBuddy 集成必须在每次执行 skill 时注入 `INTELALLOC_RUNTIME_HOST=w
 配置 IntelAlloc API key：你的 key
 ```
 
-key 优先级为单次 `--api-key`、`INTELALLOC_API_KEY`、本地 `config.json`、符合条件的宿主凭据。本地没有 key 时，首次成功读取的宿主 key 会保存到 `~/.codex/intelalloc-image/config.json`；此后一直使用该 key，直到用户手动配置新 key 覆盖它。直接提供 `sk-...` key 后，skill 会保存该 key 并立即重试原请求，且不会回显完整 key。不会修改宿主凭据文件。`show-config` 只显示脱敏后的 key、来源和自动保存状态。
+key 优先级为单次 `--api-key`、`INTELALLOC_API_KEY`、本地 `config.json`、当前符合条件的宿主凭据。只要 `config.json` 已有 key，后续始终使用它，切换模型也不会替换；只有用户手动配置新 key 才会覆盖。没有 key 时，每次请求都会解析当前宿主和模型并读取对应凭据，首次成功读取后保存。直接提供 `sk-...` key 后，skill 会保存该 key 并立即重试原请求，且不会回显完整 key。不会修改宿主凭据文件。`show-config` 只显示脱敏后的 key、模型匹配结果、来源和自动保存状态。
 
 ### 生图
 
-未指定输出文件或目录时，会自动保存唯一 PNG 到 `~/Pictures/IntelAlloc`；目录会在成功生成后创建。指定文件路径时使用该文件路径，指定目录时使用该目录。
+未指定输出文件或目录时，Codex 会自动保存唯一 PNG 到 `~/Pictures/IntelAlloc/Codex`，WorkBuddy 会保存到 `~/Pictures/IntelAlloc/WorkBuddy`；目录会在成功生成后创建。指定文件路径时使用该文件路径，指定目录时使用该目录。
 
 ```text
 用 IntelAlloc 生成一张未来城市夜景，输出到 D:\out\city.png
@@ -451,7 +472,7 @@ key 优先级为单次 `--api-key`、`INTELALLOC_API_KEY`、本地 `config.json`
 
 ### 批量编辑
 
-未指定输出目录时，每个批次都会在 `~/Pictures/IntelAlloc` 下创建唯一目录。指定输出目录时使用客户提供的目录。
+未指定输出目录时，每个批次都会在当前宿主的默认输出目录下创建唯一目录。指定输出目录时使用客户提供的目录。
 
 把目录里的每张图片分别编辑成独立输出：
 
@@ -498,9 +519,12 @@ key 优先级为单次 `--api-key`、`INTELALLOC_API_KEY`、本地 `config.json`
 
 ```text
 ~/.codex/intelalloc-image/config.json
+~/.workbuddy-ai/intelalloc-image/config.json
 ~/.codex/auth.json
 ~/.workbuddy-ai/models.json
 ~/.codex/intelalloc-image/history.json
+~/.workbuddy-ai/intelalloc-image/history.json
+~/.workbuddy-ai/intelalloc-image/history.json
 API key
 生成图片
 临时文件
@@ -523,9 +547,11 @@ Do not share:
 
 ```text
 ~/.codex/intelalloc-image/config.json
+~/.workbuddy-ai/intelalloc-image/config.json
 ~/.codex/auth.json
 ~/.workbuddy-ai/models.json
 ~/.codex/intelalloc-image/history.json
+~/.workbuddy-ai/intelalloc-image/history.json
 API keys
 generated images
 temporary files

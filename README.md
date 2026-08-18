@@ -24,7 +24,7 @@ After installing the skill, generate an image directly:
 Use IntelAlloc to generate a futuristic city at night and save it to D:\out\city.png
 ```
 
-When no save path is specified, the skill creates `~/Pictures/IntelAlloc` and saves a unique PNG there. Successful requests display the image and the exact full saved directory path as a clickable link. Never shorten the link text to `outputs`, a directory basename, or `打开保存目录`.
+When no save path is specified, Codex saves unique PNGs under `~/Pictures/IntelAlloc/Codex` and WorkBuddy saves them under `~/Pictures/IntelAlloc/WorkBuddy`. Successful requests display the image and the exact full saved directory path as a clickable link. Never shorten the link text to `outputs`, a directory basename, or `打开保存目录`.
 
 ## Help
 
@@ -108,7 +108,7 @@ Restart or refresh Codex after installation.
 
 ## Common Prompts
 
-Without a specified save path, generated and edited images are saved under `~/Pictures/IntelAlloc`; batch edits use a unique subdirectory there. A user-provided file path or directory always takes precedence.
+Without a specified save path, Codex saves generated and edited images under `~/Pictures/IntelAlloc/Codex`, while WorkBuddy uses `~/Pictures/IntelAlloc/WorkBuddy`; batch edits use a unique subdirectory there. A user-provided file path or directory always takes precedence.
 
 Generate:
 
@@ -181,15 +181,17 @@ When an API request fails, Codex shows the returned failure reason first and rem
 
 ## Safety And Devices
 
-Codex reads `OPENAI_API_KEY` from `~/.codex/auth.json` only when the current host and model are confirmed as Codex + GPT. WorkBuddy must inject `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model>` on every skill invocation; the skill then reads the matching GPT model's `apiKey` from `~/.workbuddy-ai/models.json` and never assumes the first entry. The first valid automatic key is saved locally until manually replaced. Unknown/non-GPT contexts use local manual configuration. Output paths and local history are also device-specific.
+Codex reads `OPENAI_API_KEY` from `~/.codex/auth.json` only when no skill key is configured and the current host and model are confirmed as Codex + GPT. For WorkBuddy, when no skill key exists, the host must provide `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model-id>`; the skill reads the matching GPT model's `apiKey` from `~/.workbuddy-ai/models.json`, saves it locally, and then keeps using it until manual replacement. Once a skill key is configured, model changes do not replace it. Unknown/non-GPT contexts use local manual configuration. Skill state is host-specific: Codex uses `~/.codex/intelalloc-image/` and WorkBuddy uses `~/.workbuddy-ai/intelalloc-image/`. This includes `config.json` and `history.json`; `last` and `--from-last` never cross hosts. Unknown hosts retain the legacy Codex state path and the legacy `~/Pictures/IntelAlloc` default output directory. User-specified output paths remain unchanged.
 
 Do not share:
 
 ```text
 ~/.codex/intelalloc-image/config.json
+~/.workbuddy-ai/intelalloc-image/config.json
 ~/.codex/auth.json
 ~/.workbuddy-ai/models.json
 ~/.codex/intelalloc-image/history.json
+~/.workbuddy-ai/intelalloc-image/history.json
 API keys
 generated images
 temporary files
@@ -245,11 +247,11 @@ macOS / Linux:
 配置 IntelAlloc API key：你的 key
 ```
 
-Codex 确认宿主和 GPT 模型后读取 `~/.codex/auth.json` 的 `OPENAI_API_KEY`；WorkBuddy 集成必须在每次执行 skill 时注入 `INTELALLOC_RUNTIME_HOST=workbuddy` 与 `INTELALLOC_RUNTIME_MODEL=<当前模型>`，skill 才会在 `~/.workbuddy-ai/models.json` 中匹配 `id` 或 `name` 并读取 `apiKey`，不会默认使用第一项。本地没有 key 时，首次成功读取的宿主 key 会保存到 `~/.codex/intelalloc-image/config.json`，后续持续使用，直到用户手动配置新 key 覆盖它；不会修改宿主凭据文件。
+只有 skill 尚未配置 key 时，Codex 才会在确认宿主和 GPT 模型后读取 `~/.codex/auth.json` 的 `OPENAI_API_KEY`；WorkBuddy 宿主也只需在没有 skill key 时注入 `INTELALLOC_RUNTIME_HOST=workbuddy` 与 `INTELALLOC_RUNTIME_MODEL=<当前模型 ID>`，skill 会在 `~/.workbuddy-ai/models.json` 中匹配并保存对应 `apiKey`。保存后始终使用该 key，切换模型不会替换；只有手动配置新 key 才会覆盖，且不会修改宿主凭据文件。
 
 ### 生图
 
-未指定保存路径时，skill 会自动创建 `~/Pictures/IntelAlloc` 并保存唯一 PNG；批量编辑会在其中创建唯一批次目录。请求成功后会展示图片和以完整实际保存路径为文字的可点击目录链接。禁止将链接文字缩短为 `outputs`、目录名、`打开保存目录` 或其他简化文本。用户提供文件路径或目录时，始终使用客户提供的路径。
+未指定保存路径时，Codex 会保存到 `~/Pictures/IntelAlloc/Codex`，WorkBuddy 会保存到 `~/Pictures/IntelAlloc/WorkBuddy`；批量编辑会在对应目录中创建唯一批次目录。请求成功后会展示图片和以完整实际保存路径为文字的可点击目录链接。禁止将链接文字缩短为 `outputs`、目录名、`打开保存目录` 或其他简化文本。用户提供文件路径或目录时，始终使用客户提供的路径。
 
 ```text
 用 IntelAlloc 生成一张未来城市夜景，输出到 D:\out\city.png
@@ -347,9 +349,11 @@ Codex 确认宿主和 GPT 模型后读取 `~/.codex/auth.json` 的 `OPENAI_API_K
 
 ```text
 ~/.codex/intelalloc-image/config.json
+~/.workbuddy-ai/intelalloc-image/config.json
 ~/.codex/auth.json
 ~/.workbuddy-ai/models.json
 ~/.codex/intelalloc-image/history.json
+~/.workbuddy-ai/intelalloc-image/history.json
 API key
 生成图片
 临时文件
