@@ -24,13 +24,13 @@ After installing the skill, generate an image directly:
 Use IntelAlloc to generate a futuristic city at night and save it to D:\out\city.png
 ```
 
-When no save path is specified, Codex saves unique PNGs under `~/Pictures/IntelAlloc/Codex` and WorkBuddy saves them under `~/Pictures/IntelAlloc/WorkBuddy`. Successful requests display the image and the exact full saved directory path as a clickable link. Never shorten the link text to `outputs`, a directory basename, or `打开保存目录`.
+When no save path is specified, Codex saves unique PNGs under `~/Pictures/IntelAlloc/Codex` and WorkBuddy saves them under `~/Pictures/IntelAlloc/WorkBuddy`. Successful requests display the image and a clickable link to the full saved directory path.
 
 ## Help
 
 Ask Codex naturally for IntelAlloc image help. A normal customer-facing answer should describe the available image creation, editing, reference-image, batch, size, quality, and save-location options in plain language. It should not display command names, flags, Python code, API endpoints, or internal configuration paths.
 
-For example, you can say: “我想了解 IntelAlloc 能做什么、默认图片质量和保存位置。” Codex should answer in natural language, explain that images are saved automatically in a host-specific folder under `IntelAlloc` when no location is given, and explain that an eligible GPT-series key is tried automatically before asking the user for a key.
+For example, you can say: “I want to learn what IntelAlloc can do, the default image quality, and where images are saved.” Codex should answer in natural language, explain that images are saved automatically in a host-specific folder under `IntelAlloc` when no location is given, and explain that an eligible GPT-series key is tried automatically before asking the user for a key.
 
 The bundled read-only help command remains available for developers and troubleshooting; it is an internal technical reference and should not be pasted into an ordinary customer reply.
 
@@ -293,7 +293,7 @@ macOS / Linux 的 Codex：
 
 ### 生图
 
-未指定保存路径时，Codex 会保存到 `~/Pictures/IntelAlloc/Codex`，WorkBuddy 会保存到 `~/Pictures/IntelAlloc/WorkBuddy`；批量编辑会在对应目录中创建唯一批次目录。请求成功后会展示图片和以完整实际保存路径为文字的可点击目录链接。禁止将链接文字缩短为 `outputs`、目录名、`打开保存目录` 或其他简化文本。用户提供文件路径或目录时，始终使用客户提供的路径。
+未指定保存路径时，Codex 会保存到 `~/Pictures/IntelAlloc/Codex`，WorkBuddy 会保存到 `~/Pictures/IntelAlloc/WorkBuddy`；批量编辑会在对应目录中创建唯一批次目录。请求成功后会展示图片和指向完整实际保存目录的可点击链接。用户提供文件路径或目录时，始终使用客户提供的路径。
 
 ```text
 用 IntelAlloc 生成一张未来城市夜景，输出到 D:\out\city.png
