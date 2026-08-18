@@ -9,7 +9,9 @@ description: Generate and edit images through the IntelAlloc image API from Code
 
 Use the bundled CLI to call the IntelAlloc image API for text-to-image generation, image editing, directory reference-image editing, and batch image edits. The skill is meant for Codex and WorkBuddy users on any supported device where it is installed and the IntelAlloc API is reachable.
 
-The CLI is `scripts/intelalloc_image.py`. Run it with Python 3 and standard-library dependencies only. On macOS, use `python3` when `python` is unavailable. If Pillow is installed, the CLI can use it as an optional optimization helper for edit uploads.
+The CLI is `scripts/intelalloc_image.py`. Run it with Python 3 and standard-library dependencies only. For direct CLI commands, use `python` on Windows and `python3` on macOS or Linux. If Pillow is installed, the CLI can use it as an optional optimization helper for edit uploads.
+
+The command templates below are resolved by the current host: use the Windows `python` launcher on Windows, and `python3` with POSIX paths on macOS or Linux.
 
 The skill supports English and Chinese natural-language requests. Match the user's language in normal replies: answer English users in English and Chinese users in Chinese. Do not translate or rewrite raw API error bodies.
 
@@ -20,8 +22,9 @@ For onboarding another Codex or WorkBuddy user, include `USAGE.md` with the skil
 Install the extracted `intelalloc-image` folder in the host-specific skill directory:
 
 - Codex on Windows: `C:\Users\<user>\.codex\skills\intelalloc-image`
+- Codex on macOS: `~/.codex/skills/intelalloc-image`
+- Codex on Linux: `~/.codex/skills/intelalloc-image`
 - WorkBuddy on Windows: `C:\Users\<user>\.workbuddy-ai\skills\intelalloc-image`
-- Codex on macOS/Linux: `~/.codex/skills/intelalloc-image`
 - WorkBuddy on macOS: `~/.workbuddy-ai/skills/intelalloc-image`
 
 Linux is supported here for Codex only.
@@ -55,7 +58,7 @@ Do not show command names, command-line flags, Python code, API endpoints, inter
 - Background: `auto`
 - Max input images per edit request: `16`
 - Edit upload optimization: for multi-image edits, optimize upload copies first when Pillow is available; never modify the original input images.
-- User-Agent: generated automatically using a platform-appropriate client CLI style, such as `codex_cli_rs/0.77.0 (Windows 10.0.26200; x86_64) WindowsTerminal` on Windows or `codex_cli_rs/0.77.0 (macOS 15.0; arm64) Terminal` on macOS
+- User-Agent: generated automatically from the current host and device environment using a client-appropriate style
 
 Supported sizes: `1536x1024`, `1024x1536`, `1024x1024`, `2048x1152`, `1152x2048`, `2048x2048`, `3840x2160`, `2160x3840`.
 

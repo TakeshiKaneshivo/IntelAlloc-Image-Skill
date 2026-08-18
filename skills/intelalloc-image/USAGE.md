@@ -6,13 +6,13 @@ This guide is for Codex and WorkBuddy users who install the `intelalloc-image` s
 
 Install the `intelalloc-image` folder here:
 
-- Windows: `C:\Users\<your-user>\.codex\skills\intelalloc-image`
+- Codex on Windows: `C:\Users\<your-user>\.codex\skills\intelalloc-image`
+- Codex on macOS: `~/.codex/skills/intelalloc-image`
+- Codex on Linux: `~/.codex/skills/intelalloc-image`
 - WorkBuddy on Windows: `C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image`
-- macOS/Linux Codex: `~/.codex/skills/intelalloc-image`
 - WorkBuddy on macOS: `~/.workbuddy-ai/skills/intelalloc-image`
 
-On macOS, use `python3` instead of `python` for direct CLI commands when the
-`python` command is unavailable.
+For direct CLI commands, use `python` on Windows and `python3` on macOS or Linux.
 
 Restart or refresh Codex or WorkBuddy after installation.
 
@@ -31,6 +31,8 @@ For example: “What can IntelAlloc do, what are the default image settings, and
 The bundled read-only help command remains available as a developer and troubleshooting reference. Its technical output should not be pasted into a normal customer reply.
 
 ## Natural-Language Examples
+
+The examples in this section use Windows paths. On macOS or Linux, replace them with POSIX paths such as `~/Pictures/IntelAlloc/Codex` or `/path/to/input.png`.
 
 Generate an image:
 
@@ -72,9 +74,18 @@ Batch edit a folder:
 Batch edit images in D:\source into pixel art style and save outputs to D:\out
 ```
 
+POSIX path examples for macOS and Linux:
+
+```text
+Use IntelAlloc to generate a product poster and save it to /path/to/poster.png
+Use IntelAlloc to edit /path/to/source.png and save it to /path/to/watercolor.png
+Use images in /path/to/refs as references to generate a poster and save it to /path/to/poster.png
+Batch edit images in /path/to/source into pixel art style and save outputs to /path/to/out
+```
+
 ## API Key Configuration
 
-The skill works immediately after installation. Before every API request, the host integration must provide the runtime host and exact current model ID. For WorkBuddy, pass `--runtime-host workbuddy --runtime-model <current-model-id>` or set `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model-id>`; do not rely on the first `models.json` entry.
+The skill works immediately after installation. Codex can identify its runtime host and model from the Codex session environment or `~/.codex/config.toml`; explicit runtime arguments are optional. WorkBuddy must pass `--runtime-host workbuddy` on every call and must also pass `--runtime-model <current-model-id>` for `generate`, `edit`, and `batch-edit`; when invoking the CLI directly, use the equivalent `INTELALLOC_RUNTIME_HOST` and `INTELALLOC_RUNTIME_MODEL` environment variables. Do not rely on the first `models.json` entry.
 
 Automatic credentials are used only for GPT-series models:
 
@@ -83,26 +94,20 @@ Automatic credentials are used only for GPT-series models:
 
 WorkBuddy integration must set `INTELALLOC_RUNTIME_HOST=workbuddy` for every `generate`, `edit`, and `batch-edit` invocation, and must also set `INTELALLOC_RUNTIME_MODEL=<current-model-id>` for those image calls. The first valid model key is saved to `config.json` and then reused for all later requests until `configure --api-key` replaces it. Unknown hosts, unknown/non-GPT models, invalid files, and unmatched models fall back to manual configuration. Runtime model lookup is skipped while a skill key is already configured.
 
-Equivalent CLI form for every WorkBuddy image command:
-
-```bash
-python scripts/intelalloc_image.py generate --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "..."
-python scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "..." --input "/path/to/input.png"
-python scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<current-model-id>" --prompt "..." --input-dir "/path/to/images"
-```
+The platform-specific WorkBuddy CLI examples below include the correct skill path, shell, and Python command for each supported platform.
 
 Use `--runtime-host workbuddy` for WorkBuddy `configure`, `show-config`, `last`, and `history` commands too, so each command uses WorkBuddy's separate state directory. Pass the current model ID whenever it is available. The host marker remains required after a key has been saved.
 
 Save or update the API key later:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py configure --api-key "<your-api-key>"
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py configure --api-key "<your-api-key>"
 ```
 
 Check the current configuration without revealing the full key:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py show-config
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py show-config
 ```
 
 WorkBuddy on macOS:
@@ -139,10 +144,10 @@ Without `--output` or `--output-dir`, Codex saves a unique PNG to `~/Pictures/In
 CLI form:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py generate --prompt "future city at night" --output "/path/to/city.png"
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py generate --prompt "future city at night" --output "/path/to/city.png"
 ```
 
-Windows:
+Codex on Windows:
 
 ```powershell
 python C:\Users\<your-user>\.codex\skills\intelalloc-image\scripts\intelalloc_image.py generate --prompt "future city at night" --output "D:\out\city.png"
@@ -183,7 +188,7 @@ When generation succeeds, the current host shows the output image and provides a
 Edit one local image:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "make this watercolor" --input "/path/to/source.png" --output "/path/to/watercolor.png"
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "make this watercolor" --input "/path/to/source.png" --output "/path/to/watercolor.png"
 ```
 
 WorkBuddy on macOS:
@@ -201,7 +206,7 @@ python C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image\scripts\intela
 Edit with multiple reference images:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "combine these references into a product poster" --input "/path/a.png" --input "/path/b.jpg" --output "/path/poster.png"
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "combine these references into a product poster" --input "/path/a.png" --input "/path/b.jpg" --output "/path/poster.png"
 ```
 
 Supported input types are `.png`, `.jpg`, `.jpeg`, and `.webp`. One edit request supports at most 16 input images.
@@ -211,7 +216,7 @@ If you drag an image into Codex or WorkBuddy, the current host can use it direct
 Combine dragged images with the previous output:
 
 ```bash
-python scripts/intelalloc_image.py edit --input "/path/dragged.png" --from-last --prompt "add the dragged image into the previous output and keep the overall style consistent" --output "/path/result.png"
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --input "/path/dragged.png" --from-last --prompt "add the dragged image into the previous output and keep the overall style consistent" --output "/path/result.png"
 ```
 
 You can repeat `--input` for multiple dragged images. `--from-last` appends the most recent successful IntelAlloc output as another edit input. The 16-image limit includes dragged images, directory images, and the previous output.
@@ -223,19 +228,19 @@ For multi-image edits, the CLI tries to optimize upload copies to reduce request
 Use images in a folder as references for one output:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "use these references to make a poster" --input-dir "/path/to/refs" --output "/path/to/poster.png"
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "use these references to make a poster" --input-dir "/path/to/refs" --output "/path/to/poster.png"
 ```
 
 By default, only top-level files in the folder are used. Include subfolders only when needed:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "use these references" --input-dir "/path/to/refs" --recursive --output "/path/to/poster.png"
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "use these references" --input-dir "/path/to/refs" --recursive --output "/path/to/poster.png"
 ```
 
 If the folder has more than 16 supported images, narrow the folder or explicitly limit the count:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "use these references" --input-dir "/path/to/refs" --limit 16 --output "/path/to/poster.png"
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --prompt "use these references" --input-dir "/path/to/refs" --limit 16 --output "/path/to/poster.png"
 ```
 
 WorkBuddy on macOS folder-reference example:
@@ -257,10 +262,10 @@ Without `--output-dir`, each batch creates a unique directory under the current 
 Batch-edit each image in a folder into separate outputs:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py batch-edit --prompt "make each image pixel art" --input-dir "/path/to/source" --output-dir "/path/to/out"
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py batch-edit --prompt "make each image pixel art" --input-dir "/path/to/source" --output-dir "/path/to/out"
 ```
 
-Windows:
+Codex on Windows:
 
 ```powershell
 python C:\Users\<your-user>\.codex\skills\intelalloc-image\scripts\intelalloc_image.py batch-edit --prompt "make each image pixel art" --input-dir "D:\source" --output-dir "D:\out"
@@ -296,13 +301,13 @@ current model ID.
 Show the latest output:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py last
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py last
 ```
 
 Show recent history:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py history
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py history
 ```
 
 WorkBuddy on macOS:
@@ -322,7 +327,7 @@ python C:\Users\<your-user>\.workbuddy-ai\skills\intelalloc-image\scripts\intela
 Edit from the latest output:
 
 ```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --from-last --prompt "make it cinematic" --output "/path/to/cinematic.png"
+python3 ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --from-last --prompt "make it cinematic" --output "/path/to/cinematic.png"
 ```
 
 WorkBuddy on macOS (include the current model ID for this image request):
@@ -463,14 +468,15 @@ The phrase "previous image" only works on the same device where that image was g
 
 把 `intelalloc-image` 文件夹放到当前宿主的 skills 目录：
 
-- Windows: `C:\Users\<你的用户名>\.codex\skills\intelalloc-image`
-- macOS/Linux 的 Codex：`~/.codex/skills/intelalloc-image`
+- Windows 的 Codex：`C:\Users\<你的用户名>\.codex\skills\intelalloc-image`
+- macOS 的 Codex：`~/.codex/skills/intelalloc-image`
+- Linux 的 Codex：`~/.codex/skills/intelalloc-image`
 
 Windows WorkBuddy：`C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image`
 
 macOS WorkBuddy：`~/.workbuddy-ai/skills/intelalloc-image`
 
-在 macOS 直接运行命令时，如果系统没有 `python` 命令，请使用 `python3`。
+直接运行 CLI 命令时，Windows 使用 `python`，macOS 或 Linux 使用 `python3`。
 
 如果你下载的是 `intelalloc-image-release.zip`，先解压它，再解压里面的 `intelalloc-image.zip`，把得到的 `intelalloc-image` 文件夹放到上面的目录。安装后重启或刷新 Codex 或 WorkBuddy。
 
@@ -484,7 +490,7 @@ macOS WorkBuddy：`~/.workbuddy-ai/skills/intelalloc-image`
 
 ### API key 配置
 
-安装后无需初始化。每次 API 请求前，宿主集成都必须提供运行时宿主和当前模型的准确 ID。对于 WorkBuddy，必须传入 `--runtime-host workbuddy --runtime-model <当前模型 ID>`，或设置 `INTELALLOC_RUNTIME_HOST=workbuddy` 和 `INTELALLOC_RUNTIME_MODEL=<当前模型 ID>`；不能默认使用 `models.json` 的第一项。
+安装后无需初始化。Codex 可以通过 Codex 会话环境或 `~/.codex/config.toml` 自动识别宿主和模型，也可以显式传入运行时参数。WorkBuddy 每次调用必须传入 `--runtime-host workbuddy`；`generate`、`edit` 和 `batch-edit` 还必须传入 `--runtime-model <当前模型 ID>`，直接运行 CLI 时也可以使用对应的 `INTELALLOC_RUNTIME_HOST` 和 `INTELALLOC_RUNTIME_MODEL` 环境变量。不能默认使用 `models.json` 的第一项。
 
 只有 GPT 系列模型才会自动读取凭据：
 
@@ -493,12 +499,22 @@ macOS WorkBuddy：`~/.workbuddy-ai/skills/intelalloc-image`
 
 WorkBuddy 集成每次 `generate`、`edit` 和 `batch-edit` 调用都必须注入 `INTELALLOC_RUNTIME_HOST=workbuddy` 和 `INTELALLOC_RUNTIME_MODEL=<当前模型 ID>`。第一次成功读取的模型 key 会保存到 `config.json`，之后一直使用，直到用户手动配置新 key。宿主未知、模型未知或非 GPT、文件无效、模型匹配失败时，改走手动配置；已有 skill key 时跳过运行时模型读取。
 
-WorkBuddy 的每个图片命令也可直接传入运行时参数：
+WorkBuddy 的每个图片命令也可直接传入运行时参数。
+
+macOS WorkBuddy：
 
 ```bash
-python scripts/intelalloc_image.py generate --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..."
-python scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..." --input "/path/to/input.png"
-python scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..." --input-dir "/path/to/images"
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py generate --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..."
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..." --input "/path/to/input.png"
+python3 ~/.workbuddy-ai/skills/intelalloc-image/scripts/intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..." --input-dir "/path/to/images"
+```
+
+Windows WorkBuddy（PowerShell）：
+
+```powershell
+python C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py generate --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..."
+python C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..." --input "D:\images\input.png"
+python C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image\scripts\intelalloc_image.py batch-edit --runtime-host workbuddy --runtime-model "<当前模型 ID>" --prompt "..." --input-dir "D:\images"
 ```
 
 WorkBuddy 调用 `configure`、`show-config`、`last` 和 `history` 时也必须传入 `--runtime-host workbuddy`，以使用 WorkBuddy 独立的状态目录；可以取得当前模型 ID 时一并传入。保存 key 后仍然必须传入宿主标记。
@@ -536,6 +552,8 @@ python C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image\scripts\
 保存 key 后仍然必须传入 WorkBuddy 宿主标记，因为它同时决定配置、历史和默认输出目录。
 
 ### 生图
+
+下面的 Windows 示例使用 `D:\` 路径；在 macOS 或 Linux 中请改用 `~/Pictures/IntelAlloc/Codex` 或 `/path/to/input.png` 这样的 POSIX 路径。
 
 未指定输出文件或目录时，Codex 会自动保存唯一 PNG 到 `~/Pictures/IntelAlloc/Codex`，WorkBuddy 会保存到 `~/Pictures/IntelAlloc/WorkBuddy`；目录会在成功生成后创建。指定文件路径时使用该文件路径，指定目录时使用该目录。
 
@@ -599,6 +617,15 @@ python C:\Users\<你的用户名>\.workbuddy-ai\skills\intelalloc-image\scripts\
 
 ```text
 批量把 D:\source 里的图片改成像素风，输出到 D:\out
+```
+
+macOS 和 Linux 路径示例：
+
+```text
+用 IntelAlloc 生成一张产品海报，输出到 /path/to/poster.png
+用 IntelAlloc 把 /path/to/source.png 改成水彩风，输出到 /path/to/watercolor.png
+读取 /path/to/refs 里的图片作为参考，生成一张产品海报，输出到 /path/to/poster.png
+批量把 /path/to/source 里的图片改成像素风，输出到 /path/to/out
 ```
 
 ### 尺寸和质量

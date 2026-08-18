@@ -92,10 +92,22 @@ Unzip it, then unzip the inner `intelalloc-image.zip`.
 
 Place the extracted `intelalloc-image` folder here:
 
-Windows:
+Codex on Windows:
 
 ```text
 C:\Users\<user>\.codex\skills\intelalloc-image
+```
+
+Codex on macOS:
+
+```text
+~/.codex/skills/intelalloc-image
+```
+
+Codex on Linux:
+
+```text
+~/.codex/skills/intelalloc-image
 ```
 
 WorkBuddy on Windows:
@@ -110,19 +122,15 @@ WorkBuddy on macOS:
 ~/.workbuddy-ai/skills/intelalloc-image
 ```
 
-Codex on macOS / Linux:
-
-```text
-~/.codex/skills/intelalloc-image
-```
-
-WorkBuddy integrations on Windows and macOS use the corresponding `.workbuddy-ai/skills/intelalloc-image` directory under the user's home directory. On macOS, use `python3` for direct CLI examples when `python` is unavailable.
+WorkBuddy integrations on Windows and macOS use the corresponding `.workbuddy-ai/skills/intelalloc-image` directory under the user's home directory. For direct CLI commands, use `python` on Windows and `python3` on macOS or Linux.
 
 Restart or refresh Codex or WorkBuddy after installation.
 
 ## Common Prompts
 
 Without a specified save path, Codex saves generated and edited images under `~/Pictures/IntelAlloc/Codex`, while WorkBuddy uses `~/Pictures/IntelAlloc/WorkBuddy`; batch edits use a unique subdirectory there. A user-provided file path or directory always takes precedence.
+
+The Windows examples below use `D:\` paths. On macOS or Linux, use POSIX paths such as `~/Pictures/IntelAlloc/Codex` or `/path/to/input.png` instead.
 
 ### WorkBuddy Runtime Contract
 
@@ -174,6 +182,15 @@ Specify size or quality only when you want to override the default for that requ
 
 ```text
 Use IntelAlloc to generate a 3840x2160 poster with high quality and save it to D:\out\poster.png
+```
+
+POSIX path examples for macOS and Linux:
+
+```text
+Use IntelAlloc to generate a product poster and save it to /path/to/poster.png
+Use IntelAlloc to edit /path/to/source.png and save it to /path/to/watercolor.png
+Use images in /path/to/refs as references to generate a poster and save it to /path/to/poster.png
+Batch edit images in /path/to/source into pixel art style and save outputs to /path/to/out
 ```
 
 ## Size And Quality
@@ -247,10 +264,22 @@ releases/intelalloc-image-release.zip
 
 解压后，再解压里面的 `intelalloc-image.zip`，把得到的 `intelalloc-image` 文件夹放到：
 
-Windows:
+Windows 的 Codex：
 
 ```text
 C:\Users\<用户名>\.codex\skills\intelalloc-image
+```
+
+macOS 的 Codex：
+
+```text
+~/.codex/skills/intelalloc-image
+```
+
+Linux 的 Codex：
+
+```text
+~/.codex/skills/intelalloc-image
 ```
 
 Windows WorkBuddy：
@@ -265,12 +294,6 @@ macOS WorkBuddy：
 ~/.workbuddy-ai/skills/intelalloc-image
 ```
 
-macOS / Linux 的 Codex：
-
-```text
-~/.codex/skills/intelalloc-image
-```
-
 安装后重启或刷新 Codex 或 WorkBuddy。
 
 ### 帮助
@@ -278,6 +301,8 @@ macOS / Linux 的 Codex：
 直接对 Codex 或 WorkBuddy 说“IntelAlloc 图片帮助”，或自然地询问“可以生成和修改哪些图片”“默认质量是多少”“图片会保存到哪里”。普通回复会用中文说明生成、改图、参考图、批量处理、尺寸质量和保存位置，不要求用户记忆命令，也不会展示内部路径或密钥配置命令。
 
 未指定保存位置时，图片会自动保存到系统图片目录下按宿主区分的 `IntelAlloc` 子目录；也可以直接说“保存到某个文件”或“保存到某个目录”。系统会先尝试使用符合条件的 GPT 系列模型凭据，无法自动使用时再请用户提供 IntelAlloc GPT 系列 API key。
+
+下面的 Windows 示例使用 `D:\` 路径；在 macOS 或 Linux 中请改用 `~/Pictures/IntelAlloc/Codex` 或 `/path/to/input.png` 这样的 POSIX 路径。
 
 开发者或排障场景仍可使用随技能附带的只读帮助命令查看技术细节；这些命令不属于普通客户的使用方式。
 
@@ -289,7 +314,7 @@ macOS / Linux 的 Codex：
 配置 IntelAlloc API key：你的 key
 ```
 
-只有 skill 尚未配置 key 时，Codex 才会在确认宿主和 GPT 模型后读取 `~/.codex/auth.json` 的 `OPENAI_API_KEY`；WorkBuddy 每次调用都必须注入 `INTELALLOC_RUNTIME_HOST=workbuddy`，图片请求还必须注入 `INTELALLOC_RUNTIME_MODEL=<当前模型 ID>`。skill 会在 `~/.workbuddy-ai/models.json` 中匹配并保存对应 `apiKey`。保存后始终使用该 key，切换模型不会替换；只有手动配置新 key 才会覆盖，且不会修改宿主凭据文件。`configure`、`show-config`、`last` 和 `history` 也必须带宿主标记。
+只有 skill 尚未配置 key 时，Codex 才会在确认宿主和 GPT 模型后读取 `~/.codex/auth.json` 的 `OPENAI_API_KEY`；Codex 可以通过会话环境或 `~/.codex/config.toml` 自动识别宿主和模型，也可以显式传入运行时参数。WorkBuddy 每次调用都必须注入 `INTELALLOC_RUNTIME_HOST=workbuddy`，图片请求还必须注入 `INTELALLOC_RUNTIME_MODEL=<当前模型 ID>`。skill 会在 `~/.workbuddy-ai/models.json` 中匹配并保存对应 `apiKey`。保存后始终使用该 key，切换模型不会替换；只有手动配置新 key 才会覆盖，且不会修改宿主凭据文件。WorkBuddy 的 `configure`、`show-config`、`last` 和 `history` 也必须带宿主标记。
 
 ### 生图
 
@@ -371,6 +396,15 @@ macOS / Linux 的 Codex：
 
 ```text
 把 IntelAlloc 默认尺寸改成 2048x1152，默认质量改成 high
+```
+
+macOS 和 Linux 路径示例：
+
+```text
+用 IntelAlloc 生成一张产品海报，输出到 /path/to/poster.png
+用 IntelAlloc 把 /path/to/source.png 改成水彩风，输出到 /path/to/watercolor.png
+读取 /path/to/refs 里的图片作为参考，生成一张产品海报，输出到 /path/to/poster.png
+批量把 /path/to/source 里的图片改成像素风，输出到 /path/to/out
 ```
 
 ### 常见问题
