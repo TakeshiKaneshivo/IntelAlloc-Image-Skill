@@ -11,15 +11,7 @@ Install the `intelalloc-image` folder here:
 
 Restart or refresh Codex after installation.
 
-Then say:
-
-```text
-Initialize IntelAlloc skill
-```
-
-```text
-Configure IntelAlloc API key: <your-api-key>
-```
+Then generate an image directly, or configure a local key if an automatic runtime credential is unavailable:
 
 ```text
 Use IntelAlloc to generate a futuristic city at night and save it to D:\out\city.png
@@ -28,8 +20,6 @@ Use IntelAlloc to generate a futuristic city at night and save it to D:\out\city
 中文示例：
 
 ```text
-初始化 IntelAlloc skill
-配置 IntelAlloc API key：你的 key
 用 IntelAlloc 生成一张未来城市夜景，输出到 D:\out\city.png
 ```
 
@@ -86,25 +76,16 @@ Batch edit images in D:\source into pixel art style and save outputs to D:\out
 批量把 D:\source 里的图片改成像素风，输出到 D:\out
 ```
 
-## Initialization And API Key
+## API Key Configuration
 
-On a new device, initialize local settings:
+The skill works immediately after installation. On the first API request without a local key, it checks the runtime host and current model. Pass `--runtime-host codex|workbuddy` and `--runtime-model <model>` when available, or set `INTELALLOC_RUNTIME_HOST` and `INTELALLOC_RUNTIME_MODEL`.
 
-```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py init
-```
+Automatic credentials are used only for GPT-series models:
 
-Windows:
+- Codex: read `OPENAI_API_KEY` from `~/.codex/auth.json`.
+- WorkBuddy: match the current model's `id` or `name` in `~/.workbuddy-ai/models.json`, then read `apiKey`.
 
-```powershell
-python C:\Users\<your-user>\.codex\skills\intelalloc-image\scripts\intelalloc_image.py init
-```
-
-Initialize and save an API key in one step:
-
-```bash
-python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py init --api-key "<your-api-key>"
-```
+WorkBuddy integration must set `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model>` for every skill invocation. The skill never assumes the first model entry is active. Unknown hosts, unknown/non-GPT models, invalid files, and unmatched models fall back to manual configuration.
 
 Save or update the API key later:
 
@@ -124,9 +105,15 @@ Local config is stored outside the skill folder:
 ~/.codex/intelalloc-image/config.json
 ```
 
-Do not share this file.
+The key lookup order is single-request `--api-key`, `INTELALLOC_API_KEY`, the local `config.json`, then an eligible host-specific GPT credential. When no local key exists, the first eligible automatic key is copied to `config.json`; later requests use that saved key until `configure --api-key` replaces it. If no key is available, provide an IntelAlloc GPT-series model API key manually. Host credential files are never modified.
+
+`show-config` reports the detected host, model, GPT classification, automatic credential status, persisted automatic-key status and origin, and final key source without revealing any complete key.
+
+Do not share either configuration file.
 
 ## Generate Images
+
+Without `--output` or `--output-dir`, a unique PNG is saved to `~/Pictures/IntelAlloc`. The directory is created after a successful response. Use `--output` for an exact file path or `--output-dir` for a user-selected directory.
 
 CLI form:
 
@@ -156,7 +143,7 @@ REQUEST_FINISHED_AT=...
 REQUEST_ELAPSED_SECONDS=...
 ```
 
-When generation succeeds, Codex shows the output image in the conversation using the returned `DISPLAY_IMAGE` path.
+When generation succeeds, Codex shows the output image and links to its saved directory using the returned `DISPLAY_IMAGE` and `DISPLAY_DIRECTORY` paths.
 
 ## Edit Images
 
@@ -207,6 +194,8 @@ python ~/.codex/skills/intelalloc-image/scripts/intelalloc_image.py edit --promp
 ```
 
 ## Batch Edit A Folder
+
+Without `--output-dir`, each batch creates a unique directory under `~/Pictures/IntelAlloc`. Supply `--output-dir` to use a specific directory.
 
 Batch-edit each image in a folder into separate outputs:
 
@@ -313,9 +302,11 @@ Successful commands return fields like:
 ```text
 SAVED_IMAGE=D:\out\city.png
 DISPLAY_IMAGE=D:/out/city.png
+SAVED_DIRECTORY=D:\out
+DISPLAY_DIRECTORY=D:/out
 ```
 
-Codex uses `DISPLAY_IMAGE` to show the generated image directly in the conversation. Batch commands return `SAVED_IMAGES` and `DISPLAY_IMAGES`; Codex should show each generated image.
+Codex uses `DISPLAY_IMAGE` to show the generated image directly in the conversation and `DISPLAY_DIRECTORY` to provide a clickable saved-directory link whose text is the actual path, for example `已保存至 [D:/out](D:/out)`. Batch commands return `SAVED_IMAGES`, `DISPLAY_IMAGES`, and one batch `DISPLAY_DIRECTORY`; Codex should show each generated image and one directory link.
 
 ## Common Errors
 
@@ -345,7 +336,7 @@ Access denied | backend.intelalloc.com used Cloudflare to restrict access
 Error 1010
 ```
 
-First run `init --force`, confirm `show-config`, then retry. If it still fails, the backend Cloudflare rule likely needs to allow API clients for `/v1/images/*`.
+Run `show-config` to confirm the automatically generated device User-Agent, then retry. If it still fails, the backend Cloudflare rule likely needs to allow API clients for `/v1/images/*`.
 
 Input image missing: provide a valid local path.
 
@@ -366,23 +357,28 @@ For any generation/editing request failure, Codex should show the returned failu
 
 如果你下载的是 `intelalloc-image-release.zip`，先解压它，再解压里面的 `intelalloc-image.zip`，把得到的 `intelalloc-image` 文件夹放到上面的目录。安装后重启或刷新 Codex。
 
-### 初始化和 API key
+### API key 配置
 
-新设备第一次使用时，说：
+安装后无需初始化。本地尚未保存 key 时，第一次正式请求会检查当前宿主和模型。可传入 `--runtime-host codex|workbuddy` 与 `--runtime-model <模型>`，或设置 `INTELALLOC_RUNTIME_HOST` 与 `INTELALLOC_RUNTIME_MODEL`。
 
-```text
-初始化 IntelAlloc skill
-```
+只有 GPT 系列模型才会自动读取凭据：
 
-然后配置你自己的 API key：
+- Codex：读取 `~/.codex/auth.json` 的 `OPENAI_API_KEY`。
+- WorkBuddy：在 `~/.workbuddy-ai/models.json` 中匹配当前模型的 `id` 或 `name`，读取对应的 `apiKey`。
+
+WorkBuddy 集成必须在每次执行 skill 时注入 `INTELALLOC_RUNTIME_HOST=workbuddy` 和 `INTELALLOC_RUNTIME_MODEL=<当前模型>`。skill 不会默认使用 `models.json` 第一项。宿主未知、模型未知或非 GPT、文件无效、模型匹配失败时，改走手动配置。
+
+如果没有可用 key，请提供 IntelAlloc GPT 系列模型的 API key：
 
 ```text
 配置 IntelAlloc API key：你的 key
 ```
 
-每台设备都需要单独初始化和配置 API key。配置文件保存在本机，不会打包进 skill。
+key 优先级为单次 `--api-key`、`INTELALLOC_API_KEY`、本地 `config.json`、符合条件的宿主凭据。本地没有 key 时，首次成功读取的宿主 key 会保存到 `~/.codex/intelalloc-image/config.json`；此后一直使用该 key，直到用户手动配置新 key 覆盖它。直接提供 `sk-...` key 后，skill 会保存该 key 并立即重试原请求，且不会回显完整 key。不会修改宿主凭据文件。`show-config` 只显示脱敏后的 key、来源和自动保存状态。
 
 ### 生图
+
+未指定输出文件或目录时，会自动保存唯一 PNG 到 `~/Pictures/IntelAlloc`；目录会在成功生成后创建。指定文件路径时使用该文件路径，指定目录时使用该目录。
 
 ```text
 用 IntelAlloc 生成一张未来城市夜景，输出到 D:\out\city.png
@@ -438,6 +434,8 @@ For any generation/editing request failure, Codex should show the returned failu
 
 ### 批量编辑
 
+未指定输出目录时，每个批次都会在 `~/Pictures/IntelAlloc` 下创建唯一目录。指定输出目录时使用客户提供的目录。
+
 把目录里的每张图片分别编辑成独立输出：
 
 ```text
@@ -464,7 +462,7 @@ For any generation/editing request failure, Codex should show the returned failu
 
 ### 输出图片展示
 
-生成或编辑成功后，Codex 会在会话里直接展示输出图片。批量编辑时，会展示生成图片列表。
+生成或编辑成功后，Codex 会在会话里直接展示输出图片，并提供以实际保存路径为文字的可点击目录链接，例如 `已保存至 [D:/out](D:/out)`。批量编辑时，会展示生成图片列表和一个批次保存目录链接。
 
 ### 常见问题
 
@@ -472,7 +470,7 @@ For any generation/editing request failure, Codex should show the returned failu
 - 拖入图片不可读：提供图片的本地文件路径。
 - 上张图不存在：重新指定输入图片，或先生成一张新图。
 - HTTP 502：后端或上游服务暂时不可用，稍后重试。
-- Cloudflare 1010 / 403：重新初始化后再试；如果仍失败，需要后端放行该 API 客户端。
+- Cloudflare 1010 / 403：运行 `show-config` 确认自动生成的 User-Agent 后重试；如果仍失败，需要后端放行该 API 客户端。
 - 参考图超过 16 张：缩小图片范围，或明确让 Codex 只取 16 张。
 
 请求失败时，Codex 会先显示失败原因，再提醒你重试或稍后再试，不会继续做其它图片操作。
@@ -483,6 +481,8 @@ For any generation/editing request failure, Codex should show the returned failu
 
 ```text
 ~/.codex/intelalloc-image/config.json
+~/.codex/auth.json
+~/.workbuddy-ai/models.json
 ~/.codex/intelalloc-image/history.json
 API key
 生成图片
@@ -497,8 +497,7 @@ The skill folder can be the same on every device.
 
 Each device needs its own:
 
-- `init`
-- API key configuration
+- API key configuration only when an automatic runtime credential is unavailable
 - local output paths
 - local history
 - optional User-Agent override if that device hits Cloudflare rules
@@ -507,6 +506,8 @@ Do not share:
 
 ```text
 ~/.codex/intelalloc-image/config.json
+~/.codex/auth.json
+~/.workbuddy-ai/models.json
 ~/.codex/intelalloc-image/history.json
 API keys
 generated images

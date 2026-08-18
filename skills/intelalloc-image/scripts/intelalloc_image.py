@@ -128,6 +128,18 @@ def config_path() -> pathlib.Path:
     return config_dir() / "config.json"
 
 
+def auth_path() -> pathlib.Path:
+    return pathlib.Path.home() / ".codex" / "auth.json"
+
+
+def codex_config_path() -> pathlib.Path:
+    return pathlib.Path.home() / ".codex" / "config.toml"
+
+
+def workbuddy_models_path() -> pathlib.Path:
+    return pathlib.Path.home() / ".workbuddy-ai" / "models.json"
+
+
 def history_path() -> pathlib.Path:
     return config_dir() / "history.json"
 
@@ -170,6 +182,150 @@ def load_config() -> Dict[str, Any]:
     return cfg
 
 
+def string_value(value: Any) -> str:
+    return value.strip() if isinstance(value, str) else ""
+
+
+AUTOMATIC_KEY_SOURCES = {"codex-auth", "workbuddy-model"}
+
+
+def stored_api_key_origin(cfg: Dict[str, Any]) -> str:
+    if not string_value(cfg.get("api_key")):
+        return ""
+    origin = string_value(cfg.get("api_key_origin"))
+    return origin or "manual"
+
+
+def save_automatic_api_key(cfg: Dict[str, Any], automatic: Dict[str, str]) -> None:
+    """Persist the first eligible host credential as the skill's local key."""
+    cfg["api_key"] = automatic["api_key"]
+    cfg["api_key_origin"] = automatic["source"]
+    cfg["api_key_runtime_host"] = automatic["host"]
+    cfg["api_key_runtime_model"] = automatic["model"]
+    cfg["api_key_saved_at"] = now_iso()
+    save_json_private(config_path(), cfg)
+
+
+def load_codex_auth_api_key() -> str:
+    auth = load_json(auth_path(), {})
+    if not isinstance(auth, dict):
+        return ""
+    return string_value(auth.get("OPENAI_API_KEY"))
+
+
+def load_codex_config_model() -> str:
+    path = codex_config_path()
+    if not path.exists():
+        return ""
+    try:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            match = re.match(r'^\s*model\s*=\s*["\']([^"\']+)["\']\s*(?:#.*)?$', line)
+            if match:
+                return match.group(1).strip()
+    except OSError:
+        pass
+    return ""
+
+
+def normalized_model_id(value: str) -> str:
+    value = value.strip().lower()
+    for separator in (":", "/"):
+        if separator in value:
+            value = value.rsplit(separator, 1)[-1]
+    return value
+
+
+def is_gpt_model(value: str) -> bool:
+    model = normalized_model_id(value)
+    return model == "gpt" or model.startswith("gpt-")
+
+
+def normalized_runtime_host(value: Any) -> str:
+    value = string_value(value).lower()
+    return value if value in {"codex", "workbuddy"} else ""
+
+
+def resolve_runtime_context(args: argparse.Namespace) -> Dict[str, str]:
+    explicit_host = getattr(args, "runtime_host", None) or os.environ.get("INTELALLOC_RUNTIME_HOST")
+    host = normalized_runtime_host(explicit_host)
+    if explicit_host:
+        host_source = "cli" if getattr(args, "runtime_host", None) else "environment"
+        if not host:
+            host_source = "invalid"
+    elif os.environ.get("CODEX_SESSION_ID") or os.environ.get("CODEX_THREAD_ID"):
+        host = "codex"
+        host_source = "codex-environment"
+    elif os.environ.get("WORKBUDDY_SESSION_ID") or os.environ.get("WORKBUDDY_MODEL") or os.environ.get("WORKBUDDY_CURRENT_MODEL"):
+        host = "workbuddy"
+        host_source = "workbuddy-environment"
+    else:
+        host_source = "none"
+
+    runtime_model = getattr(args, "runtime_model", None)
+    model_source = "cli" if runtime_model else ""
+    if not runtime_model:
+        runtime_model = os.environ.get("INTELALLOC_RUNTIME_MODEL")
+        model_source = "environment" if runtime_model else ""
+    if not runtime_model and host == "codex":
+        runtime_model = os.environ.get("CODEX_MODEL") or os.environ.get("CODEX_CURRENT_MODEL")
+        model_source = "codex-environment" if runtime_model else ""
+    if not runtime_model and host == "workbuddy":
+        runtime_model = os.environ.get("WORKBUDDY_MODEL") or os.environ.get("WORKBUDDY_CURRENT_MODEL")
+        model_source = "workbuddy-environment" if runtime_model else ""
+    if not runtime_model and host == "codex":
+        runtime_model = load_codex_config_model()
+        model_source = "codex-config" if runtime_model else ""
+    runtime_model = string_value(runtime_model)
+    if not model_source:
+        model_source = "none"
+    return {
+        "host": host or "unknown",
+        "host_source": host_source,
+        "model": runtime_model,
+        "model_source": model_source,
+        "model_is_gpt": "true" if is_gpt_model(runtime_model) else "false",
+    }
+
+
+def load_workbuddy_model_api_key(runtime_model: str) -> Tuple[str, str]:
+    models = load_json(workbuddy_models_path(), [])
+    if not isinstance(models, list):
+        return "", "models-invalid"
+    expected = normalized_model_id(runtime_model)
+    for item in models:
+        if not isinstance(item, dict):
+            continue
+        identifiers = (string_value(item.get("id")), string_value(item.get("name")))
+        if any(normalized_model_id(identifier) == expected for identifier in identifiers if identifier):
+            return string_value(item.get("apiKey")), "model-matched"
+    return "", "model-not-found"
+
+
+def resolve_automatic_api_key(args: argparse.Namespace) -> Dict[str, str]:
+    runtime = resolve_runtime_context(args)
+    result = dict(runtime)
+    result.update({"api_key": "", "source": "none", "reason": ""})
+    if runtime["host"] == "unknown":
+        result["reason"] = "runtime-host-unknown"
+        return result
+    if not runtime["model"]:
+        result["reason"] = "runtime-model-unknown"
+        return result
+    if runtime["model_is_gpt"] != "true":
+        result["reason"] = "runtime-model-not-gpt"
+        return result
+    if runtime["host"] == "codex":
+        result["api_key"] = load_codex_auth_api_key()
+        result["source"] = "codex-auth"
+        result["reason"] = "key-available" if result["api_key"] else "codex-auth-key-missing"
+        return result
+    key, match_reason = load_workbuddy_model_api_key(runtime["model"])
+    result["api_key"] = key
+    result["source"] = "workbuddy-model"
+    result["reason"] = "key-available" if key else match_reason
+    return result
+
+
 def mask_key(value: str) -> str:
     if not value:
         return ""
@@ -202,9 +358,43 @@ def normalize_quality(value: Optional[str]) -> str:
 
 def resolve_settings(args: argparse.Namespace, require_key: bool) -> Dict[str, str]:
     cfg = load_config()
-    api_key = getattr(args, "api_key", None) or os.environ.get("INTELALLOC_API_KEY") or cfg.get("api_key") or ""
+    automatic = resolve_automatic_api_key(args)
+    candidates = (
+        ("cli", getattr(args, "api_key", None)),
+        ("environment", os.environ.get("INTELALLOC_API_KEY")),
+        ("config", cfg.get("api_key")),
+        (automatic["source"], automatic["api_key"]),
+    )
+    api_key = ""
+    api_key_source = "none"
+    for source, candidate in candidates:
+        if candidate is None:
+            continue
+        candidate = candidate.strip() if isinstance(candidate, str) else str(candidate).strip()
+        if candidate:
+            api_key = candidate
+            api_key_source = source
+            break
+    automatic_key_persisted = stored_api_key_origin(cfg) in AUTOMATIC_KEY_SOURCES
+    if require_key and api_key_source in AUTOMATIC_KEY_SOURCES:
+        # Only an eligible host credential is adopted. CLI and environment keys stay request-scoped.
+        save_automatic_api_key(cfg, automatic)
+        automatic_key_persisted = True
     settings = {
         "api_key": str(api_key).strip(),
+        "api_key_source": api_key_source,
+        "runtime_host": automatic["host"],
+        "runtime_host_source": automatic["host_source"],
+        "runtime_model": automatic["model"],
+        "runtime_model_source": automatic["model_source"],
+        "runtime_model_is_gpt": automatic["model_is_gpt"],
+        "automatic_api_key_configured": "true" if automatic["api_key"] else "false",
+        "automatic_api_key_source": automatic["source"],
+        "automatic_api_key_reason": automatic["reason"],
+        "automatic_api_key_persisted": "true" if automatic_key_persisted else "false",
+        "stored_api_key_origin": stored_api_key_origin(cfg),
+        "stored_api_key_runtime_host": string_value(cfg.get("api_key_runtime_host")),
+        "stored_api_key_runtime_model": string_value(cfg.get("api_key_runtime_model")),
         "endpoint": str(getattr(args, "endpoint", None) or cfg.get("endpoint") or DEFAULT_GENERATIONS_ENDPOINT).strip(),
         "edits_endpoint": str(
             getattr(args, "edits_endpoint", None) or cfg.get("edits_endpoint") or DEFAULT_EDITS_ENDPOINT
@@ -218,8 +408,15 @@ def resolve_settings(args: argparse.Namespace, require_key: bool) -> Dict[str, s
     }
     if require_key and not settings["api_key"]:
         raise CliError(
-            "IntelAlloc API key is not configured. Run: python scripts/intelalloc_image.py configure --api-key <key>"
+            "IntelAlloc GPT-series model API key is not configured. Configure an IntelAlloc GPT-series model API key: "
+            "python scripts/intelalloc_image.py configure --api-key <key>"
         )
+    if require_key and settings["api_key_source"] in {"cli", "environment", "config"}:
+        if settings["automatic_api_key_reason"] != "key-available":
+            print(
+                "WARNING=当前宿主或模型未确认可使用自动凭据；请确保手动 API key 属于 GPT 系列模型。",
+                file=sys.stderr,
+            )
     if not settings["endpoint"]:
         settings["endpoint"] = DEFAULT_GENERATIONS_ENDPOINT
     if not settings["edits_endpoint"]:
@@ -246,6 +443,30 @@ def save_image(path: pathlib.Path, image_bytes: bytes) -> pathlib.Path:
     with path.open("wb") as f:
         f.write(image_bytes)
     return path.resolve()
+
+
+def default_output_dir() -> pathlib.Path:
+    return pathlib.Path.home() / "Pictures" / "IntelAlloc"
+
+
+def unique_output_name(kind: str) -> str:
+    timestamp = _dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    return "intelalloc-{0}-{1}-{2}.png".format(kind, timestamp, uuid.uuid4().hex[:8])
+
+
+def resolve_output_path(args: argparse.Namespace, kind: str) -> pathlib.Path:
+    if getattr(args, "output", None):
+        return pathlib.Path(args.output).expanduser()
+    if getattr(args, "output_dir", None):
+        return pathlib.Path(args.output_dir).expanduser() / unique_output_name(kind)
+    return default_output_dir() / unique_output_name(kind)
+
+
+def resolve_batch_output_dir(args: argparse.Namespace) -> pathlib.Path:
+    if getattr(args, "output_dir", None):
+        return pathlib.Path(args.output_dir).expanduser()
+    timestamp = _dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    return default_output_dir() / "batch-{0}-{1}".format(timestamp, uuid.uuid4().hex[:8])
 
 
 def response_error_text(response: urllib.error.HTTPError) -> str:
@@ -715,6 +936,8 @@ def print_saved(path: pathlib.Path) -> None:
     resolved = path.resolve()
     print("SAVED_IMAGE=" + str(resolved))
     print("DISPLAY_IMAGE=" + renderable_path(resolved))
+    print("SAVED_DIRECTORY=" + str(resolved.parent))
+    print("DISPLAY_DIRECTORY=" + renderable_path(resolved.parent))
 
 
 def print_saved_many(paths: Sequence[pathlib.Path]) -> None:
@@ -722,6 +945,10 @@ def print_saved_many(paths: Sequence[pathlib.Path]) -> None:
     display = [renderable_path(p) for p in paths]
     print("SAVED_IMAGES=" + json.dumps(saved, ensure_ascii=False))
     print("DISPLAY_IMAGES=" + json.dumps(display, ensure_ascii=False))
+    if paths:
+        directory = paths[0].resolve().parent
+        print("SAVED_DIRECTORY=" + str(directory))
+        print("DISPLAY_DIRECTORY=" + renderable_path(directory))
 
 
 def print_request_options(settings: Dict[str, str]) -> None:
@@ -735,63 +962,14 @@ def print_request_options(settings: Dict[str, str]) -> None:
     )
 
 
-def initialized_config(api_key: str = "") -> Dict[str, Any]:
-    info = collect_platform_info()
-    return {
-        "endpoint": DEFAULT_GENERATIONS_ENDPOINT,
-        "edits_endpoint": DEFAULT_EDITS_ENDPOINT,
-        "model": DEFAULT_MODEL,
-        "default_size": DEFAULT_SIZE,
-        "default_quality": DEFAULT_QUALITY,
-        "user_agent": build_default_user_agent(info),
-        "platform": info,
-        "initialized_at": now_iso(),
-        "api_key": api_key.strip(),
-    }
-
-
-def command_init(args: argparse.Namespace) -> int:
-    existing = load_config()
-    provided_key = (args.api_key or os.environ.get("INTELALLOC_API_KEY") or "").strip()
-    existing_key = str(existing.get("api_key") or "").strip()
-    api_key = provided_key or existing_key
-    generated = initialized_config(api_key)
-
-    if args.force:
-        cfg = dict(existing)
-        cfg.update(generated)
-    else:
-        cfg = dict(generated)
-        cfg.update(existing)
-        if provided_key:
-            cfg["api_key"] = provided_key
-        cfg.setdefault("platform", generated["platform"])
-        cfg.setdefault("initialized_at", generated["initialized_at"])
-
-    if args.dry_run:
-        preview = dict(cfg)
-        if preview.get("api_key"):
-            preview["api_key"] = mask_key(str(preview["api_key"]))
-        print(json.dumps(preview, ensure_ascii=False, indent=2))
-        print("DRY_RUN=true")
-    else:
-        save_json_private(config_path(), cfg)
-        print("CONFIG_PATH=" + str(config_path()))
-        print("INITIALIZED=true")
-
-    print("API_KEY_CONFIGURED=" + ("true" if cfg.get("api_key") else "false"))
-    if not cfg.get("api_key"):
-        print("API_KEY_MISSING=请运行 configure --api-key <key>，或重新运行 init --api-key <key>")
-    print("USER_AGENT=" + str(cfg.get("user_agent") or ""))
-    platform_info = cfg.get("platform") if isinstance(cfg.get("platform"), dict) else {}
-    print("PLATFORM=" + json.dumps(platform_info, ensure_ascii=False, sort_keys=True))
-    return 0
-
-
 def command_configure(args: argparse.Namespace) -> int:
     cfg = load_config()
     if args.api_key is not None:
         cfg["api_key"] = args.api_key.strip()
+        cfg["api_key_origin"] = "manual" if cfg["api_key"] else ""
+        cfg.pop("api_key_runtime_host", None)
+        cfg.pop("api_key_runtime_model", None)
+        cfg.pop("api_key_saved_at", None)
     if args.default_size is not None:
         cfg["default_size"] = normalize_size(args.default_size)
     if args.default_quality is not None:
@@ -821,26 +999,36 @@ def command_configure(args: argparse.Namespace) -> int:
 def command_show_config(args: argparse.Namespace) -> int:
     settings = resolve_settings(args, require_key=False)
     print("CONFIG_PATH=" + str(config_path()))
+    print("CODEX_AUTH_PATH=" + str(auth_path()))
+    print("WORKBUDDY_MODELS_PATH=" + str(workbuddy_models_path()))
+    print("RUNTIME_HOST=" + settings["runtime_host"])
+    print("RUNTIME_HOST_SOURCE=" + settings["runtime_host_source"])
+    print("RUNTIME_MODEL=" + settings["runtime_model"])
+    print("RUNTIME_MODEL_SOURCE=" + settings["runtime_model_source"])
+    print("RUNTIME_MODEL_IS_GPT=" + settings["runtime_model_is_gpt"])
+    print("AUTOMATIC_API_KEY_CONFIGURED=" + settings["automatic_api_key_configured"])
+    print("AUTOMATIC_API_KEY_SOURCE=" + settings["automatic_api_key_source"])
+    print("AUTOMATIC_API_KEY_REASON=" + settings["automatic_api_key_reason"])
+    print("AUTOMATIC_API_KEY_PERSISTED=" + settings["automatic_api_key_persisted"])
+    print("STORED_API_KEY_ORIGIN=" + settings["stored_api_key_origin"])
+    print("STORED_API_KEY_RUNTIME_HOST=" + settings["stored_api_key_runtime_host"])
+    print("STORED_API_KEY_RUNTIME_MODEL=" + settings["stored_api_key_runtime_model"])
     print("API_KEY_CONFIGURED=" + ("true" if bool(settings["api_key"]) else "false"))
     print("API_KEY_MASKED=" + mask_key(settings["api_key"]))
+    print("API_KEY_SOURCE=" + settings["api_key_source"])
     print("MODEL=" + settings["model"])
     print("USER_AGENT=" + settings["user_agent"])
     print("ENDPOINT=" + settings["endpoint"])
     print("EDITS_ENDPOINT=" + settings["edits_endpoint"])
     print("DEFAULT_SIZE=" + settings["default_size"])
     print("DEFAULT_QUALITY=" + settings["default_quality"])
-    cfg = load_config()
-    if cfg.get("initialized_at"):
-        print("INITIALIZED_AT=" + str(cfg.get("initialized_at")))
-    if isinstance(cfg.get("platform"), dict):
-        print("PLATFORM=" + json.dumps(cfg["platform"], ensure_ascii=False, sort_keys=True))
     return 0
 
 
 def command_generate(args: argparse.Namespace) -> int:
     settings = resolve_settings(args, require_key=True)
     prompt = require_prompt(args.prompt)
-    output = pathlib.Path(args.output).expanduser()
+    output = resolve_output_path(args, "generate")
     print_request_options(settings)
     image = request_generation(prompt, settings)
     saved = save_image(output, image)
@@ -858,7 +1046,7 @@ def command_edit(args: argparse.Namespace) -> int:
     inputs = resolve_inputs(args)
     if not inputs:
         raise CliError("Edit requires --input, --input-dir, or --from-last.")
-    output = pathlib.Path(args.output).expanduser()
+    output = resolve_output_path(args, "edit")
     print_request_options(settings)
     image = request_edit(prompt, inputs, settings)
     saved = save_image(output, image)
@@ -886,8 +1074,7 @@ def command_batch_edit(args: argparse.Namespace) -> int:
         inputs = inputs[: args.limit]
     if not inputs:
         raise CliError("No supported input images found in: " + str(input_dir))
-    output_dir = pathlib.Path(args.output_dir).expanduser()
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = resolve_batch_output_dir(args)
     print_request_options(settings)
     outputs: List[pathlib.Path] = []
     for index, input_path in enumerate(inputs, start=1):
@@ -911,6 +1098,8 @@ def command_last(args: argparse.Namespace) -> int:
         return 1
     print("LAST_OUTPUT=" + str(last))
     print("DISPLAY_IMAGE=" + renderable_path(last))
+    print("SAVED_DIRECTORY=" + str(last.parent.resolve()))
+    print("DISPLAY_DIRECTORY=" + renderable_path(last.parent))
     print("EXISTS=" + ("true" if last.exists() else "false"))
     return 0 if last.exists() else 1
 
@@ -934,20 +1123,22 @@ def add_common_request_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--endpoint", help=argparse.SUPPRESS)
     parser.add_argument("--edits-endpoint", help=argparse.SUPPRESS)
     parser.add_argument("--model", help=argparse.SUPPRESS)
+    parser.add_argument("--runtime-host", choices=("codex", "workbuddy"), help=argparse.SUPPRESS)
+    parser.add_argument("--runtime-model", help=argparse.SUPPRESS)
     parser.add_argument("--user-agent", help="Override the HTTP User-Agent for this request.")
     parser.add_argument("--size", choices=sorted(SUPPORTED_SIZES), help="Override image size for this request.")
     parser.add_argument("--quality", choices=sorted(SUPPORTED_QUALITIES), help="Override image quality for this request.")
 
 
+def add_single_output_options(parser: argparse.ArgumentParser) -> None:
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument("--output", help="Save to this image file path.")
+    output.add_argument("--output-dir", help="Save a generated filename in this directory.")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generate and edit images through the IntelAlloc API.")
     sub = parser.add_subparsers(dest="command", required=True)
-
-    p = sub.add_parser("init", help="Initialize local IntelAlloc skill config for this device.")
-    p.add_argument("--api-key")
-    p.add_argument("--force", action="store_true")
-    p.add_argument("--dry-run", action="store_true")
-    p.set_defaults(func=command_init)
 
     p = sub.add_parser("configure", help="Save local API key and defaults.")
     p.add_argument("--api-key")
@@ -966,7 +1157,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("generate", help="Generate one image from text.")
     add_common_request_options(p)
     p.add_argument("--prompt", required=True)
-    p.add_argument("--output", required=True)
+    add_single_output_options(p)
     p.set_defaults(func=command_generate)
 
     p = sub.add_parser("edit", help="Edit using one or more input images.")
@@ -977,14 +1168,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--recursive", action="store_true")
     p.add_argument("--limit", type=int)
     p.add_argument("--from-last", action="store_true")
-    p.add_argument("--output", required=True)
+    add_single_output_options(p)
     p.set_defaults(func=command_edit)
 
     p = sub.add_parser("batch-edit", help="Edit every supported image in a directory.")
     add_common_request_options(p)
     p.add_argument("--prompt", required=True)
     p.add_argument("--input-dir", required=True)
-    p.add_argument("--output-dir", required=True)
+    p.add_argument("--output-dir")
     p.add_argument("--recursive", action="store_true")
     p.add_argument("--limit", type=int)
     p.set_defaults(func=command_batch_edit)

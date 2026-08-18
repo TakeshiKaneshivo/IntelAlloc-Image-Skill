@@ -2,7 +2,7 @@
 
 Codex skill for generating and editing images through the IntelAlloc image API.
 
-This repository supports English and Chinese users. Install the skill, initialize it on each device, configure your own API key, then talk to Codex naturally.
+This repository supports English and Chinese users. Install the skill and talk to Codex naturally. Before image generation, it checks the runtime host and model before selecting an API key.
 
 ## IntelAlloc Platform
 
@@ -18,22 +18,18 @@ Need an invitation code? Contact takeshikaneshivo@gmail.com.
 
 ## Quick Start
 
-After installing the skill, say this in Codex:
-
-```text
-Initialize IntelAlloc skill
-```
-
-Then configure your API key:
-
-```text
-Configure IntelAlloc API key: <your-api-key>
-```
-
-Generate an image:
+After installing the skill, generate an image directly:
 
 ```text
 Use IntelAlloc to generate a futuristic city at night and save it to D:\out\city.png
+```
+
+When no save path is specified, the skill creates `~/Pictures/IntelAlloc` and saves a unique PNG there. Successful requests display the image and its saved directory as a clickable path, for example `已保存至 [D:/out](D:/out)`.
+
+If the first request is not running on a confirmed GPT model with an eligible host credential, provide an IntelAlloc GPT-series model key locally:
+
+```text
+Configure IntelAlloc API key: <your-api-key>
 ```
 
 Edit an image:
@@ -104,6 +100,8 @@ Restart or refresh Codex after installation.
 
 ## Common Prompts
 
+Without a specified save path, generated and edited images are saved under `~/Pictures/IntelAlloc`; batch edits use a unique subdirectory there. A user-provided file path or directory always takes precedence.
+
 Generate:
 
 ```text
@@ -162,10 +160,11 @@ low, medium, high
 
 ## Common Issues
 
-- Missing API key: run `Configure IntelAlloc API key: <your-api-key>`.
+- Missing API key: provide an IntelAlloc GPT-series model API key with `Configure IntelAlloc API key: <your-api-key>`.
+- Automatic credentials are used only for a first request on confirmed GPT-series models without a local key. A successful automatic key is saved locally until manually replaced. Use `show-config` to inspect the detected host, model, GPT classification, saved automatic-key state, and key source without revealing the full key.
 - Dragged image has no readable local path: provide the local image path manually.
 - Previous output is missing: generate or edit an image first, or provide a local input path.
-- Cloudflare 1010 / 403: run `Initialize IntelAlloc skill` again, then retry. If it still fails, the backend access rule may need to allow this API client.
+- Cloudflare 1010 / 403: run `show-config` to confirm the automatically generated User-Agent, then retry. If it still fails, the backend access rule may need to allow this API client.
 - HTTP 502: the backend or upstream service is temporarily unavailable. Retry later.
 - Image path does not exist: provide a readable local file path.
 - More than 16 reference images: reduce the folder or explicitly ask Codex to limit to 16 images.
@@ -174,12 +173,14 @@ When an API request fails, Codex shows the returned failure reason first and rem
 
 ## Safety And Devices
 
-Each device needs its own initialization, API key configuration, output paths, and local history.
+Codex reads `OPENAI_API_KEY` from `~/.codex/auth.json` only when the current host and model are confirmed as Codex + GPT. WorkBuddy must inject `INTELALLOC_RUNTIME_HOST=workbuddy` and `INTELALLOC_RUNTIME_MODEL=<current-model>` on every skill invocation; the skill then reads the matching GPT model's `apiKey` from `~/.workbuddy-ai/models.json` and never assumes the first entry. The first valid automatic key is saved locally until manually replaced. Unknown/non-GPT contexts use local manual configuration. Output paths and local history are also device-specific.
 
 Do not share:
 
 ```text
 ~/.codex/intelalloc-image/config.json
+~/.codex/auth.json
+~/.workbuddy-ai/models.json
 ~/.codex/intelalloc-image/history.json
 API keys
 generated images
@@ -220,23 +221,19 @@ macOS / Linux:
 
 安装后重启或刷新 Codex。
 
-### 初始化和 API key
+### API key 配置
 
-新设备第一次使用时，在 Codex 里说：
-
-```text
-初始化 IntelAlloc skill
-```
-
-然后配置你自己的 API key：
+安装后无需初始化。本地还没有 key 时，第一次正式生图会检查当前宿主和模型。只有确认是 GPT 系列模型时才自动读取宿主凭据并保存到本地；否则请提供 IntelAlloc GPT 系列模型的 API key：
 
 ```text
 配置 IntelAlloc API key：你的 key
 ```
 
-每台设备都要单独初始化和配置 API key。
+Codex 确认宿主和 GPT 模型后读取 `~/.codex/auth.json` 的 `OPENAI_API_KEY`；WorkBuddy 集成必须在每次执行 skill 时注入 `INTELALLOC_RUNTIME_HOST=workbuddy` 与 `INTELALLOC_RUNTIME_MODEL=<当前模型>`，skill 才会在 `~/.workbuddy-ai/models.json` 中匹配 `id` 或 `name` 并读取 `apiKey`，不会默认使用第一项。本地没有 key 时，首次成功读取的宿主 key 会保存到 `~/.codex/intelalloc-image/config.json`，后续持续使用，直到用户手动配置新 key 覆盖它；不会修改宿主凭据文件。
 
 ### 生图
+
+未指定保存路径时，skill 会自动创建 `~/Pictures/IntelAlloc` 并保存唯一 PNG；批量编辑会在其中创建唯一批次目录。请求成功后会展示图片和以实际保存路径为文字的可点击目录链接，例如 `已保存至 [D:/out](D:/out)`。用户提供文件路径或目录时，始终使用客户提供的路径。
 
 ```text
 用 IntelAlloc 生成一张未来城市夜景，输出到 D:\out\city.png
@@ -319,10 +316,11 @@ macOS / Linux:
 ### 常见问题
 
 - 缺 API key：重新说 `配置 IntelAlloc API key：你的 key`。
+- 宿主未知、模型未知或不是 GPT 系列：请提供 IntelAlloc GPT 系列模型的 API key；可运行 `show-config` 查看检测结果。
 - 拖入图片不可读：提供图片的本地文件路径。
 - 上张图不存在：重新指定输入图片，或先生成一张新图。
 - HTTP 502：后端或上游服务暂时不可用，稍后重试。
-- Cloudflare 1010 / 403：重新初始化后再试；如果仍失败，需要后端放行该 API 客户端。
+- Cloudflare 1010 / 403：运行 `show-config` 确认自动生成的 User-Agent 后重试；如果仍失败，需要后端放行该 API 客户端。
 - 参考图超过 16 张：缩小图片范围，或明确让 Codex 只取 16 张。
 
 请求失败时，Codex 会先显示失败原因，再提醒你重试或稍后再试，不会继续做其它图片操作。
@@ -333,6 +331,8 @@ macOS / Linux:
 
 ```text
 ~/.codex/intelalloc-image/config.json
+~/.codex/auth.json
+~/.workbuddy-ai/models.json
 ~/.codex/intelalloc-image/history.json
 API key
 生成图片
